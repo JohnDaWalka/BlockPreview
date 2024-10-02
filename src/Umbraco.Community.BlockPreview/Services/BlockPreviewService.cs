@@ -119,11 +119,34 @@ namespace Umbraco.Community.BlockPreview.Services
             if (blockInstance == null)
                 return string.Empty;
 
-            BlockGridLayoutItem? layoutItem = blockValue.BlockValue?.GetLayouts()?.FirstOrDefault();
-            if (layoutItem != null)
+            var layoutItems = blockValue.BlockValue?.GetLayouts();
+            BlockGridLayoutItem? matchingLayout = null;
+
+            if (layoutItems != null)
             {
-                blockInstance.RowSpan = layoutItem.RowSpan!.Value;
-                blockInstance.ColumnSpan = layoutItem.ColumnSpan!.Value;
+                foreach (var layoutItem in layoutItems)
+                {
+                    if (layoutItem.ContentUdi == blockInstance.ContentUdi)
+                    {
+                        blockInstance.RowSpan = layoutItem.RowSpan!.Value;
+                        blockInstance.ColumnSpan = layoutItem.ColumnSpan!.Value;
+                        matchingLayout = layoutItem;
+                    }
+                    else
+                    {
+                        foreach (var area in layoutItem.Areas)
+                        {
+                            foreach (var item in area.Items)
+                            {
+                                if (item.ContentUdi != blockInstance.ContentUdi) continue;
+                                blockInstance.RowSpan = item.RowSpan!.Value;
+                                blockInstance.ColumnSpan = item.ColumnSpan!.Value;
+                                matchingLayout = layoutItem;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
             IContentType? documentType = _contentTypeService.Get(documentTypeUnique);
@@ -151,7 +174,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (matchingBlock == null)
                 return string.Empty;
 
-            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlock, layoutItem!, blockValue);
+            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlock, matchingLayout!, blockValue);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);

@@ -222,7 +222,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 requestBuilder.SetPublishedContent(content);
 
 			context.PublishedRequest = requestBuilder.Build();
-            context.ForcedPreview(true);
+            //context.ForcedPreview(true);
         }
 
         private IPublishedContent? GetPublishedContent(Guid? nodeKey = default, Guid? documentTypeUnique = default)

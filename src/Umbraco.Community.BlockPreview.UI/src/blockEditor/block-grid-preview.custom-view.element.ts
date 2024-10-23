@@ -1,7 +1,6 @@
+import type { UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
-import { UmbContentTypeModel } from "@umbraco-cms/backoffice/content-type";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document";
-import { UmbBlockEditorCustomViewElement } from "@umbraco-cms/backoffice/extension-registry";
 import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
@@ -29,10 +28,11 @@ export class BlockGridPreviewCustomView
     blockEditorAlias?: string = '';
     culture?: string = '';
     workspaceEditContentPath?: string;
-    contentElementType: UmbContentTypeModel | undefined;
+    contentElementTypeAlias: string | undefined;
 
     private _blockGridValue: UmbBlockGridValueModel = {
         layout: {},
+        expose: [],
         contentData: [],
         settingsData: []
     }
@@ -43,6 +43,7 @@ export class BlockGridPreviewCustomView
         buildUpValue.layout ??= {};
         buildUpValue.contentData ??= [];
         buildUpValue.settingsData ??= [];
+        buildUpValue.expose ??= [];
         this._blockGridValue = buildUpValue as UmbBlockGridValueModel;
     }
     public get blockGridValue(): UmbBlockGridValueModel {
@@ -84,10 +85,12 @@ export class BlockGridPreviewCustomView
                 async ([alias, value]) => {
                     this.blockEditorAlias = alias;
 
+                    debugger;
                     this.blockGridValue = {
                         ...this.blockGridValue,
                         contentData: value.contentData!,
                         settingsData: value.settingsData!,
+                        expose: value.expose!,
                         layout: value.layout!
                     }
 
@@ -98,12 +101,14 @@ export class BlockGridPreviewCustomView
 
     #observeBlockValue(): void {
         this.consumeContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, (context) => {
+            debugger;
             this.observe(
-                observeMultiple([context.contentUdi, context.settingsUdi, context.workspaceEditContentPath, context.contentElementType]),
-                async ([contentUdi, settingsUdi, workspaceEditContentPath, contentElementType]) => {
+                observeMultiple([context.contentKey, context.settingsKey, context.workspaceEditContentPath, context.contentElementTypeAlias]),
+                async ([contentUdi, settingsUdi, workspaceEditContentPath, contentElementTypeAlias]) => {
+                    debugger;
                     this.contentUdi = contentUdi;
                     this.settingsUdi = settingsUdi ?? undefined;
-                    this.contentElementType = contentElementType;
+                    this.contentElementTypeAlias = contentElementTypeAlias;
                     this.workspaceEditContentPath = workspaceEditContentPath;
 
                     await this.#renderBlockPreview();
@@ -116,7 +121,7 @@ export class BlockGridPreviewCustomView
             !this.documentTypeUnique ||
             !this.blockEditorAlias ||
             !this.contentUdi ||
-            !this.contentElementType ||
+            !this.contentElementTypeAlias ||
             this.settingsUdi === null ||
             !this.blockGridValue.contentData ||
             !this.blockGridValue.layout)
@@ -125,7 +130,7 @@ export class BlockGridPreviewCustomView
         const previewData: PreviewGridBlockData = {
             blockEditorAlias: this.blockEditorAlias,
             nodeKey: this.unique,
-            contentElementAlias: this.contentElementType.alias,
+            contentElementAlias: this.contentElementTypeAlias,
             documentTypeUnique: this.documentTypeUnique,
             contentUdi: this.contentUdi,
             settingsUdi: this.settingsUdi,

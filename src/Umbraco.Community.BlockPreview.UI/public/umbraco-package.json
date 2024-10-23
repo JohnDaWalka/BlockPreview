@@ -8,7 +8,7 @@
     {
       "name": "Umbraco.Community.BlockPreview.EntryPoint",
       "alias": "Umbraco.Community.BlockPreview.EntryPoint",
-      "type": "entryPoint",
+      "type": "backofficeEntryPoint",
       "js": "/app_plugins/Umbraco.Community.BlockPreview/assets.js"
     }
   ]

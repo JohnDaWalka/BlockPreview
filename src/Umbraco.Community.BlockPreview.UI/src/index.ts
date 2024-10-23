@@ -1,6 +1,6 @@
 import { UmbEntryPointOnInit } from '@umbraco-cms/backoffice/extension-api';
 import { UMB_AUTH_CONTEXT } from '@umbraco-cms/backoffice/auth';
-import { ManifestBlockEditorCustomView } from '@umbraco-cms/backoffice/extension-registry';
+import { ManifestBlockEditorCustomView } from '@umbraco-cms/backoffice/block-custom-view';
 
 export * from './repository';
 export * from './blockEditor';

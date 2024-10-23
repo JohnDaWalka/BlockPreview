@@ -1,0 +1,5 @@
+﻿@inherits UmbracoViewPage<BlockGridItem<BlockWithArea>>
+
+<h1 class="title">@Model.Content.Title</h1>
+
+@await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)

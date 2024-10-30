@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Cache.PropertyEditors;
 using Umbraco.Cms.Core.Composing;
@@ -24,6 +24,7 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.Models;
 using Umbraco.Extensions;
 
 namespace Umbraco.Community.BlockPreview.Services
@@ -98,7 +99,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             ConvertNestedValuesToString(contentData);
 
-			IPublishedElement? contentElement = ConvertToElement(contentData, true);
+            IPublishedElement? contentElement = ConvertToElement(contentData, true);
 
             BlockItemData? settingsData = settingsGuidParsed != null
                 ? blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
@@ -172,6 +173,7 @@ namespace Umbraco.Community.BlockPreview.Services
 #endif
                 }
             }
+            BlockGridLayoutItem? matchingLayout = GetMatchingLayout(layoutItems!, blockInstance);
 
             IContentType? documentType = _contentTypeService.Get(documentTypeUnique);
             if (documentType == null)
@@ -286,7 +288,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 {
                     blockValue?.ContentData.ForEach(ConvertNestedValuesToString);
                     blockValue?.SettingsData.ForEach(ConvertNestedValuesToString);
-                    blockData.RawPropertyValues[rawPropValue.Key] = JsonConvert.SerializeObject(blockValue);
+                    blockData.RawPropertyValues[rawPropValue.Key] = JsonSerializer.Serialize(blockValue);
                     continue;
                 }
                 blockData.RawPropertyValues[rawPropValue.Key] = originalValue?.ToString();
@@ -296,6 +298,33 @@ namespace Umbraco.Community.BlockPreview.Services
         private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError, IPublishedElement? owner = null)
         {
 #if NET8_0
+            var properties = data.RawPropertyValues;
+            var jsonProperties = properties.Where(x => x.Value != null && x.Value is string && !string.IsNullOrEmpty(x.Value.ToString()) && x.Value.ToString()!.DetectIsJson());
+
+            foreach (var property in jsonProperties)
+            {
+                var key = property.Key;
+                var value = property.Value;
+                var propertyAsString = value?.ToString();
+
+                if (!string.IsNullOrEmpty(propertyAsString) && propertyAsString.DetectIsJson()) 
+                {
+                    try
+                    {
+                        var entityReference = JsonSerializer.Deserialize<List<EditorEntityReference>>(propertyAsString);
+
+                        if (entityReference != null && entityReference?.Any() == true)
+                        {
+                            properties[key] = string.Join(",", entityReference.Select(x => new StringUdi(x.Type, x.Unique.ToString())));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Unable to convert {key} property data to JSON", ex);
+                    }
+                }
+            }
+
             var element = _blockEditorConverter.ConvertToElement(data, PropertyCacheLevel.None, throwOnError);
 #endif
 #if NET9_0
@@ -305,6 +334,40 @@ namespace Umbraco.Community.BlockPreview.Services
                 throw new InvalidOperationException($"Unable to find Element {data?.ContentTypeAlias}");
 
             return element;
+        }
+
+        private BlockGridLayoutItem? GetMatchingLayout(IEnumerable<BlockGridLayoutItem> layoutItems, BlockGridItem? blockInstance)
+        {
+            BlockGridLayoutItem? matchingLayout = null;
+
+            if (layoutItems != null && blockInstance != null)
+            {
+                foreach (var layoutItem in layoutItems)
+                {
+                    if (layoutItem.ContentUdi == blockInstance.ContentUdi)
+                    {
+                        blockInstance.RowSpan = layoutItem.RowSpan!.Value;
+                        blockInstance.ColumnSpan = layoutItem.ColumnSpan!.Value;
+                        matchingLayout = layoutItem;
+                    }
+                    else
+                    {
+                        foreach (var area in layoutItem.Areas)
+                        {
+                            foreach (var item in area.Items)
+                            {
+                                if (item.ContentUdi != blockInstance.ContentUdi) continue;
+                                blockInstance.RowSpan = item.RowSpan!.Value;
+                                blockInstance.ColumnSpan = item.ColumnSpan!.Value;
+                                matchingLayout = layoutItem;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return matchingLayout;
         }
 
         private Type? FindBlockType(string? contentTypeAlias) =>

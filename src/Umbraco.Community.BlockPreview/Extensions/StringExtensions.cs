@@ -32,7 +32,7 @@ public static class StringExtensions
             keys.Contains("ContentData", StringComparer.InvariantCultureIgnoreCase) ||
             keys.Contains("SettingsData", StringComparer.InvariantCultureIgnoreCase))
         {
-            value = JsonConvert.DeserializeObject<BlockValue<BlockGridLayoutItem>>(rawPropValue?.ToString());
+            value = JsonConvert.DeserializeObject<BlockValue<BlockGridLayoutItem>>(rawPropValue?.ToString()!);
             return true;
         }
 

@@ -7,9 +7,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
+using Umbraco.Cms.Infrastructure.HybridCache;
+using Umbraco.Cms.Infrastructure.HybridCache.Services;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Community.BlockPreview.Services;
 using Umbraco.Extensions;
@@ -31,6 +34,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly ILanguageService _languageService;
         private readonly ISiteDomainMapper _siteDomainMapper;
         private readonly BlockPreviewOptions _blockPreviewSettings;
+        private readonly IPublishedContentTypeCache _publishedContentTypeCache;
+        private readonly IPublishedContentCache _publishedContentCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockPreviewApiController"/> class.
@@ -43,7 +48,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IBlockPreviewService blockPreviewService,
             ILanguageService languageService,
             ISiteDomainMapper siteDomainMapper,
-            IOptionsMonitor<BlockPreviewOptions> blockPreviewSettings)
+            IOptionsMonitor<BlockPreviewOptions> blockPreviewSettings,
+            IPublishedContentTypeCache publishedContentTypeCache,
+            IPublishedContentCache publishedContentCache)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -53,6 +60,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _languageService = languageService;
             _siteDomainMapper = siteDomainMapper;
             _blockPreviewSettings = blockPreviewSettings.CurrentValue;
+            _publishedContentTypeCache = publishedContentTypeCache;
+            _publishedContentCache = publishedContentCache;
         }
 
 		/// <summary>
@@ -237,10 +246,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
 			if (content == null)
 			{
-				var contentType = context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
+                var contentType = _publishedContentTypeCache.Get(PublishedItemType.Element, documentTypeUnique.GetValueOrDefault());
 				if (contentType != null)
 				{
-					var cache = context.Content?.GetByContentType(contentType);
+                    var cache = _publishedContentCache.GetByContentType(contentType);
 					return cache?.FirstOrDefault();
 				}
 			}

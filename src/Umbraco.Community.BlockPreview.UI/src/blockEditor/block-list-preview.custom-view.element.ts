@@ -7,7 +7,6 @@ import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_CONTEXT, UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
 import { BlockPreviewService, PreviewListBlockData } from "../api";
-import { UmbContentTypeModel } from "@umbraco-cms/backoffice/content-type";
 
 const elementName = "block-list-preview";
 
@@ -24,11 +23,12 @@ export class BlockListPreviewCustomView
     blockEditorAlias?: string = '';
     culture?: string = '';
     workspaceEditContentPath?: string;
-    contentElementType: UmbContentTypeModel | undefined;
+    contentElementTypeAlias?: string;
 
     @state()
     private _blockListValue: UmbBlockListValueModel = {
         layout: {},
+        expose: [],
         contentData: [],
         settingsData: []
     }
@@ -39,6 +39,7 @@ export class BlockListPreviewCustomView
         buildUpValue.layout ??= {};
         buildUpValue.contentData ??= [];
         buildUpValue.settingsData ??= [];
+        buildUpValue.expose ??= [];
         this._blockListValue = buildUpValue as UmbBlockListValueModel;
     }
     public get blockListValue(): UmbBlockListValueModel {
@@ -48,16 +49,8 @@ export class BlockListPreviewCustomView
     constructor() {
         super();
 
-        this.consumeContext(UMB_PROPERTY_CONTEXT, (instance) => {
-            this.observe(instance.alias, async (alias) => {
-                this.blockEditorAlias = alias;
-                await this.#renderBlockPreview();
-            });
-        })
-
         this.consumeContext(UMB_PROPERTY_DATASET_CONTEXT, async (instance) => {
             this.culture = instance.getVariantId().culture ?? "";
-            await this.#renderBlockPreview();
         });
 
         this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
@@ -66,22 +59,40 @@ export class BlockListPreviewCustomView
                 async ([unique, documentTypeUnique]) => {
                     this.unique = unique;
                     this.documentTypeUnique = documentTypeUnique;
+                    this.#observeBlockListValue();
                 });
         });
+    }
 
+    #observeBlockListValue(): void {
+        this.consumeContext(UMB_PROPERTY_CONTEXT, (context) => {
+            this.observe(
+                observeMultiple([context.alias, context.value]),
+                async ([alias, value]) => {
+                    this.blockEditorAlias = alias;
+
+                    this.blockListValue = {
+                        ...this.blockListValue,
+                        contentData: value.contentData!,
+                        settingsData: value.settingsData!,
+                        expose: value.expose!,
+                        layout: value.layout!
+                    }
+
+                    this.#observeBlockValue();
+
+                    this.#observeBlockValue();
+                });
+        });
+    }
+
+    #observeBlockValue(): void {
         this.consumeContext(UMB_BLOCK_LIST_ENTRY_CONTEXT, (context) => {
             this.observe(
-                observeMultiple([context.workspaceEditContentPath, context.content, context.settings, context.layout, context.contentElementType]),
-                async ([workspaceEditContentPath, content, settings, layout, contentElementType]) => {
-                    this.contentElementType = contentElementType;
+                observeMultiple([context.workspaceEditContentPath, context.contentElementTypeAlias]),
+                async ([workspaceEditContentPath, contentElementTypeAlias]) => {
+                    this.contentElementTypeAlias = contentElementTypeAlias;
                     this.workspaceEditContentPath = workspaceEditContentPath;
-
-                    this._blockListValue = {
-                        ...this._blockListValue,
-                        contentData: [content!],
-                        settingsData: [settings!],
-                        layout: { ["Umbraco.BlockList"]: [layout!] }
-                    }
 
                     await this.#renderBlockPreview();
                 });
@@ -92,14 +103,14 @@ export class BlockListPreviewCustomView
         if (!this.unique ||
             !this.documentTypeUnique ||
             !this.blockEditorAlias ||
-            !this.contentElementType || 
+            !this.contentElementTypeAlias ||
             !this.blockListValue.contentData ||
             !this.blockListValue.layout) return;
 
         const previewData: PreviewListBlockData = {
             blockEditorAlias: this.blockEditorAlias,
             nodeKey: this.unique,
-            contentElementAlias: this.contentElementType.alias,
+            contentElementAlias: this.contentElementTypeAlias,
             culture: this.culture,
             requestBody: JSON.stringify(this.blockListValue)
         };

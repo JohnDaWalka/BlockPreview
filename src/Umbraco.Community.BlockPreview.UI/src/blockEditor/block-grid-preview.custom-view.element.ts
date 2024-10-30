@@ -85,7 +85,6 @@ export class BlockGridPreviewCustomView
                 async ([alias, value]) => {
                     this.blockEditorAlias = alias;
 
-                    debugger;
                     this.blockGridValue = {
                         ...this.blockGridValue,
                         contentData: value.contentData!,
@@ -101,11 +100,9 @@ export class BlockGridPreviewCustomView
 
     #observeBlockValue(): void {
         this.consumeContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, (context) => {
-            debugger;
             this.observe(
                 observeMultiple([context.contentKey, context.settingsKey, context.workspaceEditContentPath, context.contentElementTypeAlias]),
                 async ([contentUdi, settingsUdi, workspaceEditContentPath, contentElementTypeAlias]) => {
-                    debugger;
                     this.contentUdi = contentUdi;
                     this.settingsUdi = settingsUdi ?? undefined;
                     this.contentElementTypeAlias = contentElementTypeAlias;

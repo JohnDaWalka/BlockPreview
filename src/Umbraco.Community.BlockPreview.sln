@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Umbraco.Cms.14.x", "Umbraco.Cms.14.x\Umbraco.Cms.14.x.csproj", "{8477C90F-4021-4585-9C46-90D5D81EC3C6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Umbraco.Community.BlockPreview", "Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj", "{1D66193C-081E-443A-864B-93FF3FC8BC8E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbraco.Community.BlockPreview.SchemaGenerator", "Umbraco.Community.BlockPreview.SchemaGenerator\Umbraco.Community.BlockPreview.SchemaGenerator.csproj", "{2156296B-95CC-4C4E-9971-B5C6B85AA708}"
@@ -19,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8477C90F-4021-4585-9C46-90D5D81EC3C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8477C90F-4021-4585-9C46-90D5D81EC3C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8477C90F-4021-4585-9C46-90D5D81EC3C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8477C90F-4021-4585-9C46-90D5D81EC3C6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1D66193C-081E-443A-864B-93FF3FC8BC8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1D66193C-081E-443A-864B-93FF3FC8BC8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D66193C-081E-443A-864B-93FF3FC8BC8E}.Release|Any CPU.ActiveCfg = Release|Any CPU

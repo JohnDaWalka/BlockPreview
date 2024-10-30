@@ -42,8 +42,6 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IDataTypeService _dataTypeService;
         private readonly IContentTypeService _contentTypeService;
-        private readonly IBlockEditorElementTypeCache _elementTypeCache;
-        private readonly ILogger<BlockPreviewService> _logger;
 
         public BlockPreviewService(
             ITempDataProvider tempDataProvider,
@@ -71,8 +69,6 @@ namespace Umbraco.Community.BlockPreview.Services
             _jsonSerializer = jsonSerializer;
             _dataTypeService = dataTypeService;
             _contentTypeService = contentTypeService;
-            _elementTypeCache = elementTypeCache;
-            _logger = logger;
         }
 
         #region Public
@@ -101,7 +97,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true);
 
-            BlockItemData? settingsData = settingsGuidParsed != null
+            BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
 
@@ -121,58 +117,6 @@ namespace Umbraco.Community.BlockPreview.Services
                 return string.Empty;
 
             var layoutItems = blockValue.BlockValue?.GetLayouts();
-            BlockGridLayoutItem? matchingLayout = null;
-
-            if (layoutItems != null)
-            {
-                foreach (var layoutItem in layoutItems)
-                {
-#if NET8_0
-                    if (layoutItem.ContentUdi == blockInstance.ContentUdi)
-                    {
-                        blockInstance.RowSpan = layoutItem.RowSpan!.Value;
-                        blockInstance.ColumnSpan = layoutItem.ColumnSpan!.Value;
-                        matchingLayout = layoutItem;
-                    }
-                    else
-                    {
-                        foreach (var area in layoutItem.Areas)
-                        {
-                            foreach (var item in area.Items)
-                            {
-                                if (item.ContentUdi != blockInstance.ContentUdi) continue;
-                                blockInstance.RowSpan = item.RowSpan!.Value;
-                                blockInstance.ColumnSpan = item.ColumnSpan!.Value;
-                                matchingLayout = layoutItem;
-                                break;
-                            }
-                        }
-                    }
-#endif
-#if NET9_0
-                    if (layoutItem.ContentKey == blockInstance.ContentKey)
-                    {
-                        blockInstance.RowSpan = layoutItem.RowSpan!.Value;
-                        blockInstance.ColumnSpan = layoutItem.ColumnSpan!.Value;
-                        matchingLayout = layoutItem;
-                    }
-                    else
-                    {
-                        foreach (var area in layoutItem.Areas)
-                        {
-                            foreach (var item in area.Items)
-                            {
-                                if (item.ContentKey != blockInstance.ContentKey) continue;
-                                blockInstance.RowSpan = item.RowSpan!.Value;
-                                blockInstance.ColumnSpan = item.ColumnSpan!.Value;
-                                matchingLayout = layoutItem;
-                                break;
-                            }
-                        }
-                    }
-#endif
-                }
-            }
             BlockGridLayoutItem? matchingLayout = GetMatchingLayout(layoutItems!, blockInstance);
 
             IContentType? documentType = _contentTypeService.Get(documentTypeUnique);
@@ -281,29 +225,34 @@ namespace Umbraco.Community.BlockPreview.Services
             if (blockData == null)
                 return;
 
-            foreach (var rawPropValue in blockData.RawPropertyValues.Where(x => x.Value != null))
+            for (int i = 0; i < blockData.Values.Where(x => x.Value != null).Count(); i++)
             {
+                var rawPropValue = blockData.Values.ElementAt(i);
                 var originalValue = rawPropValue.Value;
+
                 if (originalValue.TryConvertToGridItem(out BlockValue<BlockGridLayoutItem>? blockValue))
                 {
                     blockValue?.ContentData.ForEach(ConvertNestedValuesToString);
                     blockValue?.SettingsData.ForEach(ConvertNestedValuesToString);
-                    blockData.RawPropertyValues[rawPropValue.Key] = JsonSerializer.Serialize(blockValue);
+
+                    var index = blockData.Values.FindIndex(x => x.Alias == rawPropValue.Alias);
+                    blockData.Values[i].Value = JsonSerializer.Serialize(blockValue);
                     continue;
                 }
-                blockData.RawPropertyValues[rawPropValue.Key] = originalValue?.ToString();
+
+                blockData.Values.ElementAt(i).Value = originalValue?.ToString();
             }
         }
 
         private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError, IPublishedElement? owner = null)
         {
-#if NET8_0
-            var properties = data.RawPropertyValues;
+            var properties = data.Values;
             var jsonProperties = properties.Where(x => x.Value != null && x.Value is string && !string.IsNullOrEmpty(x.Value.ToString()) && x.Value.ToString()!.DetectIsJson());
 
-            foreach (var property in jsonProperties)
+            for (int i = 0; i < jsonProperties.Count(); i++)
             {
-                var key = property.Key;
+                var property = jsonProperties.ElementAt(i);
+                var key = property.Alias;
                 var value = property.Value;
                 var propertyAsString = value?.ToString();
 
@@ -315,7 +264,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
                         if (entityReference != null && entityReference?.Any() == true)
                         {
-                            properties[key] = string.Join(",", entityReference.Select(x => new StringUdi(x.Type, x.Unique.ToString())));
+                            properties[i].Value = string.Join(",", entityReference.Select(x => new StringUdi(x.Type, x.Unique.ToString())));
                         }
                     }
                     catch (Exception ex)
@@ -325,11 +274,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 }
             }
 
-            var element = _blockEditorConverter.ConvertToElement(data, PropertyCacheLevel.None, throwOnError);
-#endif
-#if NET9_0
             var element = _blockEditorConverter.ConvertToElement(owner, data, PropertyCacheLevel.None, throwOnError);
-#endif
             if (element == null && throwOnError)
                 throw new InvalidOperationException($"Unable to find Element {data?.ContentTypeAlias}");
 
@@ -344,7 +289,7 @@ namespace Umbraco.Community.BlockPreview.Services
             {
                 foreach (var layoutItem in layoutItems)
                 {
-                    if (layoutItem.ContentUdi == blockInstance.ContentUdi)
+                    if (layoutItem.ContentKey == blockInstance.ContentKey)
                     {
                         blockInstance.RowSpan = layoutItem.RowSpan!.Value;
                         blockInstance.ColumnSpan = layoutItem.ColumnSpan!.Value;
@@ -356,7 +301,7 @@ namespace Umbraco.Community.BlockPreview.Services
                         {
                             foreach (var item in area.Items)
                             {
-                                if (item.ContentUdi != blockInstance.ContentUdi) continue;
+                                if (item.ContentKey != blockInstance.ContentKey) continue;
                                 blockInstance.RowSpan = item.RowSpan!.Value;
                                 blockInstance.ColumnSpan = item.ColumnSpan!.Value;
                                 matchingLayout = layoutItem;
@@ -510,28 +455,13 @@ namespace Umbraco.Community.BlockPreview.Services
 
                 var items = area.Items.Select(item =>
                 {
-#if NET8_0
-                    BlockItemData? areaContentData = blockValue.BlockValue?.ContentData.FirstOrDefault(x => x.Udi == item.ContentUdi);
-#endif
-#if NET9_0
                     BlockItemData? areaContentData = blockValue.BlockValue?.ContentData.FirstOrDefault(x => x.Key == item.ContentKey);
-#endif
-                    IPublishedElement? areaContentElement = ConvertToElement(areaContentData, true);
+                    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true);
 
-#if NET8_0
-                    BlockItemData? areaSettingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Udi == item.ContentUdi);
-#endif
-#if NET9_0
                     BlockItemData? areaSettingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == item.ContentKey);
-#endif
                     IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true) : default;
 
-#if NET8_0
-                    return new BlockGridItem(item.ContentUdi, areaContentElement, item.SettingsUdi, areaSettingsElement);
-#endif
-#if NET9_0
                     return new BlockGridItem(item.ContentKey, areaContentElement!, item.SettingsKey, areaSettingsElement!);
-#endif
                 }).WhereNotNull().ToList();
 
                 return new BlockGridArea(items, areaConfig.Alias!, areaConfig.RowSpan!.Value, areaConfig.ColumnSpan!.Value);

@@ -74,6 +74,7 @@ namespace Umbraco.Community.BlockPreview.Services
         #region Public
         public async Task<string> RenderGridBlock(
             string blockData,
+            IPublishedContent content,
             ControllerContext controllerContext,
             string blockEditorAlias = "",
             Guid documentTypeUnique = default,
@@ -95,13 +96,13 @@ namespace Umbraco.Community.BlockPreview.Services
 
             ConvertNestedValuesToString(contentData);
 
-            IPublishedElement? contentElement = ConvertToElement(contentData, true);
+            IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
 
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
 
-            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, contentElement) : default;
+            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, content) : default;
 
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
@@ -144,7 +145,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (matchingBlock == null)
                 return string.Empty;
 
-            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlock, matchingLayout!, blockValue);
+            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlock, matchingLayout!, blockValue, content);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);
@@ -152,6 +153,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         public async Task<string> RenderListBlock(
             string blockData,
+            IPublishedContent content,
             ControllerContext controllerContext)
         {
             var converter = new BlockListEditorDataConverter(_jsonSerializer);
@@ -162,10 +164,10 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Empty;
 
-            IPublishedElement? contentElement = ConvertToElement(contentData, true);
+            IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
 
             BlockItemData? settingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault();
-            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true) : default;
+            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, content) : default;
 
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
@@ -186,6 +188,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         public async Task<string> RenderRichTextBlock(
             string blockData,
+            IPublishedContent content,
             ControllerContext controllerContext)
         {
             var converter = new RichTextEditorBlockDataConverter(_jsonSerializer);
@@ -196,10 +199,10 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Empty;
 
-            IPublishedElement? contentElement = ConvertToElement(contentData, true);
+            IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
 
             BlockItemData? settingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault();
-            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true) : default;
+            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, content) : default;
 
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
@@ -244,7 +247,7 @@ namespace Umbraco.Community.BlockPreview.Services
             }
         }
 
-        private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError, IPublishedElement? owner = null)
+        private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError, IPublishedElement owner)
         {
             var properties = data.Values;
             var jsonProperties = properties.Where(x => x.Value != null && x.Value is string && !string.IsNullOrEmpty(x.Value.ToString()) && x.Value.ToString()!.DetectIsJson());
@@ -252,6 +255,7 @@ namespace Umbraco.Community.BlockPreview.Services
             for (int i = 0; i < jsonProperties.Count(); i++)
             {
                 var property = jsonProperties.ElementAt(i);
+                var index = properties.FindIndex(x => x.Alias == property.Alias);
                 var key = property.Alias;
                 var value = property.Value;
                 var propertyAsString = value?.ToString();
@@ -264,7 +268,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
                         if (entityReference != null && entityReference?.Any() == true)
                         {
-                            properties[i].Value = string.Join(",", entityReference.Select(x => new StringUdi(x.Type, x.Unique.ToString())));
+                            properties[index].Value = string.Join(",", entityReference.Select(x => new StringUdi(x.Type, x.Unique.ToString())));
                         }
                     }
                     catch (Exception ex)
@@ -439,7 +443,8 @@ namespace Umbraco.Community.BlockPreview.Services
             BlockGridConfiguration config,
             BlockGridConfiguration.BlockGridBlockConfiguration matchingBlock,
             BlockGridLayoutItem layoutItem,
-            BlockEditorData<BlockGridValue, BlockGridLayoutItem> blockValue)
+            BlockEditorData<BlockGridValue, BlockGridLayoutItem> blockValue,
+            IPublishedContent content)
         {
             blockInstance.AreaGridColumns = matchingBlock.AreaGridColumns ?? 12;
             blockInstance.GridColumns = config.GridColumns ?? 12;
@@ -456,10 +461,10 @@ namespace Umbraco.Community.BlockPreview.Services
                 var items = area.Items.Select(item =>
                 {
                     BlockItemData? areaContentData = blockValue.BlockValue?.ContentData.FirstOrDefault(x => x.Key == item.ContentKey);
-                    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true);
+                    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true, content);
 
                     BlockItemData? areaSettingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == item.ContentKey);
-                    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true) : default;
+                    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true, content) : default;
 
                     return new BlockGridItem(item.ContentKey, areaContentElement!, item.SettingsKey, areaSettingsElement!);
                 }).WhereNotNull().ToList();

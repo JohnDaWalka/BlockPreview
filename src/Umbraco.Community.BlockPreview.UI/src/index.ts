@@ -6,8 +6,7 @@ export * from './repository';
 export * from './blockEditor';
 
 import { SettingsRepository } from './repository';
-import { BlockGridPreviewCustomView } from './blockEditor/block-grid-preview.custom-view.element.ts';
-import { BlockListPreviewCustomView } from './blockEditor/block-list-preview.custom-view.element.ts';
+import { BlockGridPreviewCustomView, RichTextPreviewCustomView, BlockListPreviewCustomView } from './blockEditor';
 import { manifests as contextManifests } from './context/manifests.ts';
 import { OpenAPI } from './api/index.ts';
 import { BLOCK_PREVIEW_CONTEXT } from './context/block-preview.context-token.ts';
@@ -51,6 +50,22 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
             }
 
             customViewManifests.push(blockListManifest);
+        }
+
+        if (settings.richText.enabled) {
+            let richTextManifext: ManifestBlockEditorCustomView = {
+                type: 'blockEditorCustomView',
+                alias: 'BlockPreview.RichTextCustomView',
+                name: 'BlockPreview Rich Text Custom View',
+                element: RichTextPreviewCustomView,
+                forBlockEditor: 'block-rte'
+            };
+
+            if (settings.richText.contentTypes?.length !== 0) {
+                richTextManifext.forContentTypeAlias = settings.richText.contentTypes as string[];
+            }
+
+            customViewManifests.push(richTextManifext);
         }
     }
 

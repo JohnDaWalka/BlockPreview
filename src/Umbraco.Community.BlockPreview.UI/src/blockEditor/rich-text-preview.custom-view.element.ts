@@ -1,17 +1,20 @@
-import { UMB_BLOCK_LIST_ENTRY_CONTEXT, UmbBlockListValueModel } from "@umbraco-cms/backoffice/block-list";
-import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document";
+import { UMB_BLOCK_RTE_ENTRY_CONTEXT, UMB_BLOCK_RTE_MANAGER_CONTEXT, UmbBlockRteValueModel } from "@umbraco-cms/backoffice/block-rte";
 import type { UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_CONTEXT, UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
-import { BlockPreviewService, PreviewListBlockData } from "../api";
+import { BlockPreviewService, PreviewRichTextMarkupData } from "../api";
+import { UMB_BLOCK_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/block";
+import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document";
+import { UMB_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/workspace";
+import { UMB_MODAL_CONTEXT } from "@umbraco-cms/backoffice/modal";
 
-const elementName = "block-list-preview";
+const elementName = "rich-text-preview";
 
 @customElement(elementName)
-export class BlockListPreviewCustomView
+export class RichTextPreviewCustomView
     extends UmbLitElement
     implements UmbBlockEditorCustomViewElement {
 
@@ -26,7 +29,7 @@ export class BlockListPreviewCustomView
     contentElementTypeAlias?: string;
 
     @state()
-    private _blockListValue: UmbBlockListValueModel = {
+    private _blockRteValue: UmbBlockRteValueModel = {
         layout: {},
         expose: [],
         contentData: [],
@@ -34,16 +37,16 @@ export class BlockListPreviewCustomView
     }
 
     @property({ attribute: false })
-    public set blockListValue(value: UmbBlockListValueModel | undefined) {
-        const buildUpValue: Partial<UmbBlockListValueModel> = value ? { ...value } : {};
+    public set blockRteValue(value: UmbBlockRteValueModel | undefined) {
+        const buildUpValue: Partial<UmbBlockRteValueModel> = value ? { ...value } : {};
         buildUpValue.layout ??= {};
         buildUpValue.contentData ??= [];
         buildUpValue.settingsData ??= [];
         buildUpValue.expose ??= [];
-        this._blockListValue = buildUpValue as UmbBlockListValueModel;
+        this._blockRteValue = buildUpValue as UmbBlockRteValueModel;
     }
-    public get blockListValue(): UmbBlockListValueModel {
-        return this._blockListValue;
+    public get blockRteValue(): UmbBlockRteValueModel {
+        return this._blockRteValue;
     }
 
     constructor() {
@@ -53,30 +56,26 @@ export class BlockListPreviewCustomView
             this.culture = instance.getVariantId().culture ?? "";
         });
 
-        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
-            this.observe(
-                observeMultiple([context.unique, context.contentTypeUnique]),
-                async ([unique, documentTypeUnique]) => {
-                    this.unique = unique;
-                    this.documentTypeUnique = documentTypeUnique;
-                    this.#observeBlockListValue();
-                });
-        });
+        this.unique = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)?.[0];
+
+        this.#observeBlockRteValue();
     }
 
-    #observeBlockListValue(): void {
+    #observeBlockRteValue(): void {
         this.consumeContext(UMB_PROPERTY_CONTEXT, (context) => {
             this.observe(
                 observeMultiple([context.alias, context.value]),
                 async ([alias, value]) => {
                     this.blockEditorAlias = alias;
 
-                    this.blockListValue = {
-                        ...this.blockListValue,
-                        contentData: value.contentData!,
-                        settingsData: value.settingsData!,
-                        expose: value.expose!,
-                        layout: value.layout!
+                    if (value.blocks.length !== 0) {
+                        this.blockRteValue = {
+                            ...this.blockRteValue,
+                            contentData: value.blocks.contentData!,
+                            settingsData: value.blocks.settingsData!,
+                            expose: value.blocks.expose!,
+                            layout: value.blocks.layout!
+                        }
                     }
 
                     this.#observeBlockValue();
@@ -85,7 +84,7 @@ export class BlockListPreviewCustomView
     }
 
     #observeBlockValue(): void {
-        this.consumeContext(UMB_BLOCK_LIST_ENTRY_CONTEXT, (context) => {
+        this.consumeContext(UMB_BLOCK_RTE_ENTRY_CONTEXT, (context) => {
             this.observe(
                 observeMultiple([context.workspaceEditContentPath, context.contentElementTypeAlias]),
                 async ([workspaceEditContentPath, contentElementTypeAlias]) => {
@@ -99,21 +98,20 @@ export class BlockListPreviewCustomView
 
     async #renderBlockPreview() {
         if (!this.unique ||
-            !this.documentTypeUnique ||
             !this.blockEditorAlias ||
             !this.contentElementTypeAlias ||
-            !this.blockListValue.contentData ||
-            !this.blockListValue.layout) return;
+            !this.blockRteValue.contentData ||
+            !this.blockRteValue.layout) return;
 
-        const previewData: PreviewListBlockData = {
+        const previewData: PreviewRichTextMarkupData = {
             blockEditorAlias: this.blockEditorAlias,
             nodeKey: this.unique,
             contentElementAlias: this.contentElementTypeAlias,
             culture: this.culture,
-            requestBody: JSON.stringify(this.blockListValue)
+            requestBody: JSON.stringify(this.blockRteValue)
         };
 
-        const { data } = await tryExecuteAndNotify(this, BlockPreviewService.previewListBlock(previewData));
+        const { data } = await tryExecuteAndNotify(this, BlockPreviewService.previewRichTextMarkup(previewData));
 
         if (data) this.htmlMarkup = data;
     }
@@ -180,10 +178,10 @@ export class BlockListPreviewCustomView
     ]
 }
 
-export default BlockListPreviewCustomView;
+export default RichTextPreviewCustomView;
 
 declare global {
     interface HTMLElementTagNameMap {
-        [elementName]: BlockListPreviewCustomView;
+        [elementName]: RichTextPreviewCustomView;
     }
 }

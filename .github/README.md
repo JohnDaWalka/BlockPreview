@@ -9,24 +9,26 @@
 
 ## Installation
 > [!IMPORTANT]
+> **v3.x** supports Umbraco v15
+> 
 > **v2.x** supports Umbraco v14.2+
 > 
 > **v1.x** supports Umbraco v10.x - v13.x
 > 
 > To understand more about which Umbraco CMS versions are actively supported by Umbraco HQ, please see [Umbraco's Long-term Support (LTS) and End-of-Life (EOL) policy](https://umbraco.com/products/knowledge-center/long-term-support-and-end-of-life/).
 
-The Umbraco v14.2+ version of this package is [available via NuGet](https://www.nuget.org/packages/Umbraco.Community.BlockPreview).
+The Umbraco v15 version of this package is [available via NuGet](https://www.nuget.org/packages/Umbraco.Community.BlockPreview).
 
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 2.0.3
+dotnet add package Umbraco.Community.BlockPreview --version 3.0.0
 ```
 
 or the NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 2.0.3
+Install-Package Umbraco.Community.BlockPreview -Version 3.0.0
 ```
 
 ## Setup

@@ -1,6 +1,5 @@
 import type { UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UMB_BLOCK_RTE_ENTRY_CONTEXT, UmbBlockRteValueModel } from "@umbraco-cms/backoffice/block-rte";
-import { UmbElementMixin } from '@umbraco-cms/backoffice/element-api';
 import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";

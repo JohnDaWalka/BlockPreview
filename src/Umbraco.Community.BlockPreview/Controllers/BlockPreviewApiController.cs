@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
@@ -89,7 +90,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                 await SetupPublishedRequest(currentCulture, content);
 
-                markup = await _blockPreviewService.RenderGridBlock(blockData, content, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi);
+                markup = await _blockPreviewService.RenderGridBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi);
             }
             catch (Exception ex)
             {
@@ -130,7 +131,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                 await SetupPublishedRequest(currentCulture, content);
 
-                markup = await _blockPreviewService.RenderListBlock(blockData, content, ControllerContext);
+                markup = await _blockPreviewService.RenderListBlock(blockData, content!, ControllerContext);
             }
             catch (Exception ex)
             {
@@ -171,7 +172,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                 await SetupPublishedRequest(currentCulture, content);
 
-                markup = await _blockPreviewService.RenderRichTextBlock(blockData, content, ControllerContext);
+                markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext);
             }
             catch (Exception ex)
             {

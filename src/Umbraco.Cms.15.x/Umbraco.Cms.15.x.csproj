@@ -13,7 +13,7 @@
 		<PackageReference Include="Umbraco.Cms" Version="15.0.0" />
 		<PackageReference Include="Umbraco.Cms.Core" Version="15.0.0" />
 		<PackageReference Include="Umbraco.Cms.StaticAssets" Version="15.0.0" />
-		<PackageReference Include="uSync" Version="14.2.3" />
+		<PackageReference Include="uSync" Version="15.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -16,10 +16,10 @@ jobs:
     steps:
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Cache .NET packages
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}
@@ -27,7 +27,7 @@ jobs:
           ${{ runner.os }}-dotnet-
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
   

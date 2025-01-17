@@ -57,7 +57,7 @@ export class BlockListPreviewCustomView
             this.observe(
                 observeMultiple([context.unique, context.contentTypeUnique]),
                 async ([unique, documentTypeUnique]) => {
-                    this.unique = unique;
+                    this.unique = unique?.toString();
                     this.documentTypeUnique = documentTypeUnique;
                     this.#observeBlockListValue();
                 });
@@ -162,7 +162,7 @@ export class BlockListPreviewCustomView
             .preview-alert-warning {
                 background-color: var(--uui-color-warning, #f0ac00);
                 border-color: transparent;
-                color: #fff;
+                color: #000;
             }
 
             .preview-alert-info {

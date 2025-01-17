@@ -18,7 +18,7 @@ builder.CreateUmbracoBuilder()
         options.BlockList = new()
         {
             Enabled = true,
-            ContentTypes = [HeroBlock.ModelTypeAlias]
+            //ContentTypes = [HeroBlock.ModelTypeAlias]
         };
         options.RichText.Enabled = true;
     })

@@ -71,7 +71,7 @@ export class BlockGridPreviewCustomView
             this.observe(
                 observeMultiple([context.unique, context.contentTypeUnique]),
                 async ([unique, documentTypeUnique]) => {
-                    this.unique = unique;
+                    this.unique = unique?.toString();
                     this.documentTypeUnique = documentTypeUnique;
                     this.#observeBlockGridValue();
                 });
@@ -185,9 +185,9 @@ export class BlockGridPreviewCustomView
             }
 
             .preview-alert-warning {
-                background-color: var(--uui-color-danger, #f0ac00);
+                background-color: var(--uui-color-warning, #f0ac00);
                 border-color: transparent;
-                color: #fff;
+                color: #000;
             }
 
             .preview-alert-info {

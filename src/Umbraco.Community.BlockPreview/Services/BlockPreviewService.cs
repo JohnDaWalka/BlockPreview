@@ -8,16 +8,12 @@ using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Cache.PropertyEditors;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
@@ -53,7 +49,6 @@ namespace Umbraco.Community.BlockPreview.Services
         private const string BLOCK_TYPE_CACHE_KEY = "BlockPreview_BlockType_{0}";
         private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
         private const string DATA_TYPE_CACHE_KEY = "BlockPreview_DataType_{0}";
-        private const string VIEW_RESULT_CACHE_KEY = "BlockPreview_ViewResult_{0}_{1}";
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
         public BlockPreviewService(
@@ -68,8 +63,6 @@ namespace Umbraco.Community.BlockPreview.Services
             IJsonSerializer jsonSerializer,
             IContentTypeService contentTypeService,
             IDataTypeService dataTypeService,
-            IBlockEditorElementTypeCache elementTypeCache,
-            ILogger<BlockPreviewService> logger,
             AppCaches appCaches,
             IWebHostEnvironment webHostEnvironment)
         {
@@ -124,14 +117,14 @@ namespace Umbraco.Community.BlockPreview.Services
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
             {
-                return $"<div class=\"preview-alert preview-alert-warning\">ModelsBuilder is enabled but the generated model(s) could not be found. Please try regenerating models and restarting the application.</div>";
+                return $"<div class=\"preview-alert preview-alert-warning\">Generated model(s) could not be found. Please try regenerating models and restarting the application.</div>";
             }
 
             BlockGridItem? blockInstance = CreateBlockInstance(
                 BlockType.BlockGrid,
                 contentBlockType, contentElement,
-                settingsBlockType, settingsElement, contentData.Key,
-                settingsData?.Key
+                settingsBlockType, settingsElement,
+                contentData.Key, settingsData?.Key
             ) as BlockGridItem;
 
             if (blockInstance == null)
@@ -244,8 +237,8 @@ namespace Umbraco.Community.BlockPreview.Services
             RichTextBlockItem? blockInstance = CreateBlockInstance(
                 BlockType.RichText,
                 contentBlockType, contentElement,
-                settingsBlockType, settingsElement, contentData.Key,
-                settingsData?.Key
+                settingsBlockType, settingsElement,
+                contentData.Key, settingsData?.Key
             ) as RichTextBlockItem;
 
             if (blockInstance == null)
@@ -285,13 +278,13 @@ namespace Umbraco.Community.BlockPreview.Services
             var cacheKey = string.Format(DATA_TYPE_CACHE_KEY, dataTypeKey);
             return await _runtimeCache.GetCacheItem(cacheKey, async () =>
             {
-                return await _dataTypeService.GetAsync(dataTypeKey);
+                var dataType = await _dataTypeService.GetAsync(dataTypeKey);
+                return dataType;
             }, CacheDuration);
         }
 
         private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError, IPublishedElement owner)
         {
-            // There's nested data
             Parallel.ForEach(data.Values, prop =>
             {
                 string? propertyAsString = prop.Value as string ?? JsonSerializer.Serialize(prop.Value);
@@ -302,10 +295,10 @@ namespace Umbraco.Community.BlockPreview.Services
                     if (blockListConverter.TryDeserialize(propertyAsString, out BlockEditorData<BlockListValue, BlockListLayoutItem>? blockListValue))
                     {
                         var fullBlockValue = blockListValue.BlockValue;
-                        //foreach (var contentData in fullBlockValue.ContentData)
-                        //{
-                        //    var nestedElement = ConvertToElement(contentData, throwOnError, owner);
-                        //}
+                        foreach (var contentData in fullBlockValue.ContentData)
+                        {
+                            var nestedElement = ConvertToElement(contentData, throwOnError, owner);
+                        }
 
                         prop.Value = JsonSerializer.Serialize(fullBlockValue, new JsonSerializerOptions
                         {
@@ -320,10 +313,10 @@ namespace Umbraco.Community.BlockPreview.Services
                     if (blockGridConverter.TryDeserialize(propertyAsString, out BlockEditorData<BlockGridValue, BlockGridLayoutItem>? blockGridValue))
                     {
                         var fullBlockValue = blockGridValue.BlockValue;
-                        //foreach (var contentData in fullBlockValue.ContentData)
-                        //{
-                        //    var nestedElement = ConvertToElement(contentData, throwOnError, owner);
-                        //}
+                        foreach (var contentData in fullBlockValue.ContentData)
+                        {
+                            var nestedElement = ConvertToElement(contentData, throwOnError, owner);
+                        }
 
                         prop.Value = JsonSerializer.Serialize(fullBlockValue, new JsonSerializerOptions
                         {

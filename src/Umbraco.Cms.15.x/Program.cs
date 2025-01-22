@@ -1,4 +1,3 @@
-using Umbraco.Cms.Web.Common.PublishedModels;
 using Umbraco.Community.BlockPreview.Extensions;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -13,12 +12,12 @@ builder.CreateUmbracoBuilder()
         options.BlockGrid = new()
         {
             Enabled = true,
+            //ContentTypes = [InspirationBlock.ModelTypeAlias],
             Stylesheet = "/css/myblockgridlayout.css"
         };
         options.BlockList = new()
         {
-            Enabled = true,
-            //ContentTypes = [HeroBlock.ModelTypeAlias]
+            Enabled = true
         };
         options.RichText.Enabled = true;
     })

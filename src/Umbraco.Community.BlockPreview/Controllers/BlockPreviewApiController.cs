@@ -148,7 +148,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderListBlock(blockData, content!, ControllerContext);
+                    markup = await _blockPreviewService.RenderListBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique);
                 }
                 catch (Exception ex)
                 {
@@ -197,7 +197,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext);
+                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique);
                 }
                 catch (Exception ex)
                 {
@@ -230,9 +230,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private async Task<string?> GetCurrentCulture(string? culture, IPublishedContent? content = null)
         {
             // if in a culture variant setup also set the correct language.
-            var currentCulture = string.IsNullOrWhiteSpace(culture)
-                ? content?.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
-                : culture;
+            //var currentCulture = string.IsNullOrWhiteSpace(culture)
+            //    ? content?.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
+            //    : culture;
+
+            string currentCulture = culture;
 
             if (string.IsNullOrEmpty(currentCulture) || culture == "undefined")
                 currentCulture = await _languageService.GetDefaultIsoCodeAsync();

@@ -109,6 +109,7 @@ export class BlockListPreviewCustomView
             blockEditorAlias: this.blockEditorAlias,
             nodeKey: this.unique,
             contentElementAlias: this.contentElementTypeAlias,
+            documentTypeUnique: this.documentTypeUnique,
             culture: this.culture,
             requestBody: JSON.stringify(this.blockListValue)
         };

@@ -1,10 +1,10 @@
 import type { UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
-import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
+import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document";
 import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
-import { UMB_PROPERTY_CONTEXT, UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
+import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
 import { BlockPreviewService, PreviewGridBlockData } from "../api";
 import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
@@ -29,6 +29,9 @@ export class BlockGridPreviewCustomView
     culture?: string = '';
     workspaceEditContentPath?: string;
     contentElementTypeAlias: string | undefined;
+    contentElementTypeKey: string | undefined;
+    settingsElementTypeAlias: string | undefined;
+    settingsElementTypeKey: string | undefined;
 
     private _blockGridValue: UmbBlockGridValueModel = {
         layout: {},
@@ -73,40 +76,41 @@ export class BlockGridPreviewCustomView
                 async ([unique, documentTypeUnique]) => {
                     this.unique = unique?.toString();
                     this.documentTypeUnique = documentTypeUnique;
-                    this.#observeBlockGridValue();
+
+                    await this.#observeBlockValue();
                 });
         });
     }
 
-    #observeBlockGridValue(): void {
-        this.consumeContext(UMB_PROPERTY_CONTEXT, (context) => {
+    async #observeBlockValue() {
+        this.consumeContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, async (context) => {
             this.observe(
-                observeMultiple([context.alias, context.value]),
-                async ([alias, value]) => {
-                    this.blockEditorAlias = alias;
-
-                    this.blockGridValue = {
-                        ...this.blockGridValue,
-                        contentData: value.contentData!,
-                        settingsData: value.settingsData!,
-                        expose: value.expose!,
-                        layout: value.layout!
-                    }
-
-                    this.#observeBlockValue();
-                });
-        });
-    }
-
-    #observeBlockValue(): void {
-        this.consumeContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, (context) => {
-            this.observe(
-                observeMultiple([context.contentKey, context.settingsKey, context.workspaceEditContentPath, context.contentElementTypeAlias]),
-                async ([contentUdi, settingsUdi, workspaceEditContentPath, contentElementTypeAlias]) => {
+                observeMultiple([context.contentKey, context.settingsKey, context.workspaceEditContentPath, context.contentElementTypeAlias, context.contentElementTypeKey]),
+                async ([contentUdi, settingsUdi, workspaceEditContentPath, contentElementTypeAlias, contentElementTypeKey]) => {
                     this.contentUdi = contentUdi;
                     this.settingsUdi = settingsUdi ?? undefined;
                     this.contentElementTypeAlias = contentElementTypeAlias;
+                    this.contentElementTypeKey = contentElementTypeKey;
                     this.workspaceEditContentPath = workspaceEditContentPath;
+
+                    await this.#observeBlockPropertyValue();
+                });
+        });
+    }
+
+    async #observeBlockPropertyValue() {
+        this.consumeContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, (context) => {
+            this.observe(
+                observeMultiple([context.contents, context.settings, context.layouts, context.exposes, context.propertyAlias]),
+                async ([contents, settings, layouts, exposes, propertyAlias]) => {
+                    this.blockEditorAlias = propertyAlias;
+
+                    this.blockGridValue = {
+                        contentData: contents?.filter(x => x.key == this.contentUdi)!,
+                        settingsData: settings?.filter(x => x.key == this.settingsUdi)!,
+                        expose: exposes?.filter(x => x.contentKey == this.contentUdi)!,
+                        layout: { ['Umbraco.BlockGrid']: layouts?.filter(x => x.contentKey == this.contentUdi)! }
+                    }
 
                     await this.#renderBlockPreview();
                 });

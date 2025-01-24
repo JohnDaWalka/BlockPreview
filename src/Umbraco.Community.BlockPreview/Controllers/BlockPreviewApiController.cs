@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Api.Management.Routing;
+using Umbraco.Cms.Core.Cache;
+using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Configuration.Models;
+using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
@@ -32,11 +35,18 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly ILanguageService _languageService;
         private readonly ISiteDomainMapper _siteDomainMapper;
         private readonly BlockPreviewOptions _blockPreviewSettings;
-        private readonly ModelsBuilderSettings _modelsBuilderSettings;
+        private readonly IAppPolicyCache _runtimeCache;
+        private readonly ITypeFinder _typeFinder;
 
         private const string RENDER_ERROR = "<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{0}</pre></div>";
-        private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-error\"><strong><code>Umbraco:Cms:ModelsBuilder:ModelsBuilderMode</code></strong> must be set to either <strong><code>SourceCodeManual</code></strong> or <strong><code>SourceCodeAuto</code></strong> for BlockPreview to work.</div>";
+        private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-warning\">Strongly typed models must be generated and exist on disk for BlockPreview to work.</div>";
         private const string LOGGER_ERROR = "Error rendering preview for block {0}";
+
+        private const string CONTENT_CACHE_KEY = "BlockPreview_Content_{0}";
+        private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
+        private const string GENERATED_MODELS_KEY = "BlockPreview_GeneratedModels";
+
+        private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockPreviewApiController"/> class.
@@ -50,7 +60,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             ILanguageService languageService,
             ISiteDomainMapper siteDomainMapper,
             IOptionsMonitor<BlockPreviewOptions> blockPreviewSettings,
-            IOptionsMonitor<ModelsBuilderSettings> modelsBuilderSettings)
+            ITypeFinder typeFinder,
+            AppCaches appCaches)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -60,9 +71,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _languageService = languageService;
             _siteDomainMapper = siteDomainMapper;
             _blockPreviewSettings = blockPreviewSettings.CurrentValue;
-            _modelsBuilderSettings = modelsBuilderSettings.CurrentValue;
+            _typeFinder = typeFinder;
+            _runtimeCache = appCaches.RuntimeCache;
         }
 
+        #region Public
         /// <summary>
         /// Renders a preview for a grid block using the associated Razor view or ViewComponent.
         /// </summary>
@@ -89,7 +102,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration())
+            if (CheckGeneratedModelsExist())
             {
                 try
                 {
@@ -138,7 +151,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration())
+            if (CheckGeneratedModelsExist())
             {
                 try
                 {
@@ -148,7 +161,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderListBlock(blockData, content!, ControllerContext);
+                    markup = await _blockPreviewService.RenderListBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique);
                 }
                 catch (Exception ex)
                 {
@@ -187,7 +200,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration())
+            if (CheckGeneratedModelsExist())
             {
                 try
                 {
@@ -197,7 +210,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext);
+                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique);
                 }
                 catch (Exception ex)
                 {
@@ -226,13 +239,23 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             return _blockPreviewSettings;
         }
+        #endregion
+
+        #region Private
+        private bool CheckGeneratedModelsExist()
+        {
+            return _runtimeCache.GetCacheItem(GENERATED_MODELS_KEY, () =>
+            {
+                return _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().Any();
+            }, CacheDuration);
+        }
 
         private async Task<string?> GetCurrentCulture(string? culture, IPublishedContent? content = null)
         {
             // if in a culture variant setup also set the correct language.
             var currentCulture = string.IsNullOrWhiteSpace(culture)
-                ? content?.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
-                : culture;
+               ? content?.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
+               : culture;
 
             if (string.IsNullOrEmpty(currentCulture) || culture == "undefined")
                 currentCulture = await _languageService.GetDefaultIsoCodeAsync();
@@ -254,7 +277,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 requestBuilder.SetPublishedContent(content);
 
             context.PublishedRequest = requestBuilder.Build();
-            //context.ForcedPreview(true);
         }
 
         private IPublishedContent? GetPublishedContent(Guid? nodeKey = default, Guid? documentTypeUnique = default)
@@ -265,15 +287,30 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IPublishedContent? content = null;
 
             if (nodeKey != default)
-                content = context.Content?.GetById(true, nodeKey.GetValueOrDefault());
+            {
+                var cacheKey = string.Format(CONTENT_CACHE_KEY, nodeKey);
+                content = _runtimeCache.GetCacheItem(cacheKey, () =>
+                {
+                    return context.Content?.GetById(true, nodeKey.GetValueOrDefault());
+                }, CacheDuration);
+            }
 
             if (content == null)
             {
-                var contentType = context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
+                var typeCacheKey = string.Format(CONTENT_TYPE_CACHE_KEY, documentTypeUnique);
+                var contentType = _runtimeCache.GetCacheItem(typeCacheKey, () =>
+                {
+                    return context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
+                }, CacheDuration);
+
                 if (contentType != null)
                 {
-                    var cache = context.Content?.GetByContentType(contentType);
-                    return cache?.FirstOrDefault();
+                    var cacheKey = string.Format(CONTENT_CACHE_KEY, nodeKey);
+                    var cache = _runtimeCache.GetCacheItem(CONTENT_CACHE_KEY, () =>
+                    {
+                        return context.Content?.GetByContentType(contentType).FirstOrDefault();
+                    }, CacheDuration);
+                    return cache;
                 }
             }
 
@@ -311,5 +348,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             return content.DocumentNode.OuterHtml;
         }
+        #endregion
     }
 }

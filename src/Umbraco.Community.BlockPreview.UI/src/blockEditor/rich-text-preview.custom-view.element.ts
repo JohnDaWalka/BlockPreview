@@ -64,17 +64,19 @@ export class RichTextPreviewCustomView
                 async ([alias, value]) => {
                     this.blockEditorAlias = alias;
 
-                    if (value.blocks.length !== 0) {
-                        this.blockRteValue = {
-                            ...this.blockRteValue,
-                            contentData: value.blocks.contentData!,
-                            settingsData: value.blocks.settingsData!,
-                            expose: value.blocks.expose!,
-                            layout: value.blocks.layout!
+                    if (value.hasOwnProperty('blocks')) {
+                        if (value.blocks.length !== 0) {
+                            this.blockRteValue = {
+                                ...this.blockRteValue,
+                                contentData: value.blocks.contentData!,
+                                settingsData: value.blocks.settingsData!,
+                                expose: value.blocks.expose!,
+                                layout: value.blocks.layout!
+                            }
                         }
-                    }
 
-                    this.#observeBlockValue();
+                        this.#observeBlockValue();
+                    }
                 });
         });
     }

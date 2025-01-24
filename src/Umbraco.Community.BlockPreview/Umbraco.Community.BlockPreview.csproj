@@ -16,7 +16,7 @@
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<VersionPrefix>3.1.0</VersionPrefix>
+		<VersionPrefix>3.2.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
@@ -28,7 +28,7 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
-	
+
 	<ItemGroup>
 		<PackageReference Include="Umbraco.Cms.Core" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[15.0.0, 16.0.0)" />
@@ -36,7 +36,7 @@
 		<PackageReference Include="Umbraco.Cms.Api.Common" Version="[15.0.0, 16.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Api.Management" Version="[15.0.0, 16.0.0)" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<Content Include="buildTransitive\**" PackagePath="buildTransitive" />
 	</ItemGroup>

@@ -22,17 +22,19 @@ The Umbraco v15 version of this package is [available via NuGet](https://www.nug
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 3.1.0
+dotnet add package Umbraco.Community.BlockPreview --version 3.2.0
 ```
 
 or the NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 3.1.0
+Install-Package Umbraco.Community.BlockPreview -Version 3.2.0
 ```
 
 ## Setup
-`Umbraco:Cms:ModelsBuilder:ModelsBuilderMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` for BlockPreview to work.
+Generated strongly typed models must exist on disk for BlockPreview to work. `Umbraco:Cms:ModelsBuilder:ModelsMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` in your development environment and generated files committed to disk before deploying.
+
+If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Limbo.Umbraco.ModelsBuilder), the default configuration is to have `ModelsMode` set to nothing. Once this is set, generate models in the backoffice as normal.
 ```json
 "Umbraco": {
   "CMS": {

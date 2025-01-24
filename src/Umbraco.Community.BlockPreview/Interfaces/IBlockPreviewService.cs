@@ -7,8 +7,8 @@ namespace Umbraco.Community.BlockPreview.Interfaces
     {
         Task<string> RenderGridBlock(string blockData, IPublishedContent content, ControllerContext controllerContext, string blockEditorAlias = "", Guid documentTypeUnique = default, string contentUdi = "", string? settingsUdi = default);
 
-        Task<string> RenderListBlock(string blockData, IPublishedContent content, ControllerContext controllerContext);
+        Task<string> RenderListBlock(string blockData, IPublishedContent content, ControllerContext controllerContext, string blockEditorAlias = "", Guid documentTypeUnique = default);
 
-        Task<string> RenderRichTextBlock(string blockData, IPublishedContent content, ControllerContext controllerContext);
+        Task<string> RenderRichTextBlock(string blockData, IPublishedContent content, ControllerContext controllerContext, string blockEditorAlias = "", Guid documentTypeUnique = default);
     }
 }

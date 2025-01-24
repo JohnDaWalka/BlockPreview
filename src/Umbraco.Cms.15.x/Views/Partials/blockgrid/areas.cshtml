@@ -1,5 +1,5 @@
 ﻿@using Umbraco.Extensions
-@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@inherits UmbracoViewPage<BlockGridItem>
 @{
     if (Model?.Areas.Any() != true) { return; }
 }
@@ -8,6 +8,6 @@
      style="--umb-block-grid--area-grid-columns: @(Model.AreaGridColumns?.ToString() ?? Model.GridColumns?.ToString() ?? "12");">
     @foreach (var area in Model.Areas)
     {
-        @await Html.GetBlockGridItemAreaHtmlAsync(area)
+        @await Html.GetPreviewBlockGridItemAreaHtmlAsync(area)
     }
 </div>

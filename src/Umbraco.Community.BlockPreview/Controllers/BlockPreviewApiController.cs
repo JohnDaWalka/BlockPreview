@@ -9,6 +9,7 @@ using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Configuration.Models;
+using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
@@ -34,7 +35,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly ILanguageService _languageService;
         private readonly ISiteDomainMapper _siteDomainMapper;
         private readonly BlockPreviewOptions _blockPreviewSettings;
-        private readonly ModelsBuilderSettings _modelsBuilderSettings;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly ITypeFinder _typeFinder;
 
@@ -60,7 +60,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             ILanguageService languageService,
             ISiteDomainMapper siteDomainMapper,
             IOptionsMonitor<BlockPreviewOptions> blockPreviewSettings,
-            IOptionsMonitor<ModelsBuilderSettings> modelsBuilderSettings,
             ITypeFinder typeFinder,
             AppCaches appCaches)
         {
@@ -72,7 +71,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _languageService = languageService;
             _siteDomainMapper = siteDomainMapper;
             _blockPreviewSettings = blockPreviewSettings.CurrentValue;
-            _modelsBuilderSettings = modelsBuilderSettings.CurrentValue;
             _typeFinder = typeFinder;
             _runtimeCache = appCaches.RuntimeCache;
         }

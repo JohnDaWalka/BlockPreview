@@ -1,6 +1,9 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System.Globalization;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Extensions;
 
@@ -18,19 +21,27 @@ public static class StringExtensions
         return $"{char.ToUpper(value[0], CultureInfo.CurrentCulture)}{value[1..]}";
     }
 
+    public static string ToCamelCase(this string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        return $"{char.ToLower(value[0], CultureInfo.CurrentCulture)}{value[1..]}";
+    }
+
     public static bool TryConvertToGridItem(this object? rawPropValue, out BlockValue<BlockGridLayoutItem>? value)
     {
-        if (!rawPropValue?.ToString()?.DetectIsJson() == true || rawPropValue is not JObject jObject)
+        if (!rawPropValue?.ToString()?.DetectIsJson() == true || rawPropValue is not JsonObject jObject)
         {
             value = default;
             return false;
         }
 
-        var keys = jObject.Properties().Select(x => x.Name);
-
-        if (keys.Contains("Layout", StringComparer.InvariantCultureIgnoreCase) ||
-            keys.Contains("ContentData", StringComparer.InvariantCultureIgnoreCase) ||
-            keys.Contains("SettingsData", StringComparer.InvariantCultureIgnoreCase))
+        if (jObject.ContainsKey("Layout") ||
+            jObject.ContainsKey("ContentData") ||
+            jObject.ContainsKey("SettingsData"))
         {
             value = JsonConvert.DeserializeObject<BlockValue<BlockGridLayoutItem>>(rawPropValue?.ToString()!);
             return true;

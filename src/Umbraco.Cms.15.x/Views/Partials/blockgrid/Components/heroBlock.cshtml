@@ -14,6 +14,7 @@
         <div class="hero-background" style="background-image: url(@image.GetCropUrl(width:3840))">
         </div>
     }
+
     
     <div class="hero-content">
         <h1>@Model.Content.Headline</h1>
@@ -24,4 +25,4 @@
     </div>
 </div>
     
-
+<pre>Content Picker: @Model.Content.ContentPicker?.Name (@Model.Content.ContentPicker?.Url())</pre>

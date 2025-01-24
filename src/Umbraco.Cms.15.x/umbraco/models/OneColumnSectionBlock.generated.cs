@@ -48,5 +48,13 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		}
 
 		// properties
+
+		///<summary>
+		/// Nested Block Grid
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.2+559c6c9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("nestedBlockGrid")]
+		public virtual global::Umbraco.Cms.Core.Models.Blocks.BlockGridModel NestedBlockGrid => this.Value<global::Umbraco.Cms.Core.Models.Blocks.BlockGridModel>(_publishedValueFallback, "nestedBlockGrid");
 	}
 }

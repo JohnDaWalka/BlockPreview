@@ -32,9 +32,9 @@ Install-Package Umbraco.Community.BlockPreview -Version 3.2.0
 ```
 
 ## Setup
-Generated models must exist on disk for BlockPreview to work. `Umbraco:Cms:ModelsBuilder:ModelsBuilderMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` in your development environment and generated files committed to disk.
+Generated strongly typed models must exist on disk for BlockPreview to work. `Umbraco:Cms:ModelsBuilder:ModelsMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` in your development environment and generated files committed to disk before deploying.
 
-If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Limbo.Umbraco.ModelsBuilder), the default configuration is to have `ModelsBuilderMode` set to nothing. Once this is set, generate models in the backoffice as normal.
+If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Limbo.Umbraco.ModelsBuilder), the default configuration is to have `ModelsMode` set to nothing. Once this is set, generate models in the backoffice as normal.
 ```json
 "Umbraco": {
   "CMS": {

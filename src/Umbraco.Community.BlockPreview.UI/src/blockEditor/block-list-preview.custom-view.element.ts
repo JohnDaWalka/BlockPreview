@@ -1,24 +1,10 @@
-import {
-    UMB_BLOCK_LIST_ENTRY_CONTEXT,
-    UmbBlockListValueModel
-} from "@umbraco-cms/backoffice/block-list";
+import { UMB_BLOCK_LIST_ENTRY_CONTEXT, UMB_BLOCK_LIST_MANAGER_CONTEXT, UmbBlockListValueModel } from "@umbraco-cms/backoffice/block-list";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document";
 import type { UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
-import {
-    css,
-    customElement,
-    html,
-    ifDefined,
-    property,
-    state,
-    unsafeHTML
-} from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
-import {
-    UMB_PROPERTY_CONTEXT,
-    UMB_PROPERTY_DATASET_CONTEXT
-} from "@umbraco-cms/backoffice/property";
+import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
 import { BlockPreviewService, PreviewListBlockData } from "../api";
 
@@ -29,17 +15,25 @@ export class BlockListPreviewCustomView
     extends UmbLitElement
     implements UmbBlockEditorCustomViewElement {
 
-    @state() private _htmlMarkup: string = '';
-    @state() private _isLoading: boolean = false;
-    @state() private _error: string | null = null;
+    @state()
+    private _htmlMarkup: string = '';
+
+    @state()
+    private _isLoading: boolean = false;
+
+    @state()
+    private _error: string | null = null;
 
     private _blockContext = {
         unique: '',
         documentTypeUnique: '',
+        contentUdi: '',
+        settingsUdi: '',
         blockEditorAlias: '',
         culture: '',
         workspaceEditContentPath: '',
-        contentElementTypeAlias: ''
+        contentElementTypeAlias: '',
+        contentElementTypeKey: ''
     };
 
     @state()
@@ -87,27 +81,6 @@ export class BlockListPreviewCustomView
                 async ([unique, documentTypeUnique]) => {
                     this._blockContext.unique = unique?.toString() ?? '';
                     this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
-                    this.#observeBlockListValue();
-                }
-            );
-        });
-    }
-
-    #observeBlockListValue() {
-        this.consumeContext(UMB_PROPERTY_CONTEXT, (context) => {
-            this.observe(
-                observeMultiple([context.alias, context.value]),
-                async ([alias, value]) => {
-                    this._blockContext.blockEditorAlias = alias ?? '';
-
-                    this.blockListValue = {
-                        ...this.blockListValue,
-                        contentData: value.contentData ?? [],
-                        settingsData: value.settingsData ?? [],
-                        expose: value.expose ?? [],
-                        layout: value.layout ?? {}
-                    };
-
                     this.#observeBlockValue();
                 }
             );
@@ -117,12 +90,55 @@ export class BlockListPreviewCustomView
     #observeBlockValue() {
         this.consumeContext(UMB_BLOCK_LIST_ENTRY_CONTEXT, (context) => {
             this.observe(
-                observeMultiple([context.workspaceEditContentPath, context.contentElementTypeAlias]),
-                async ([workspaceEditContentPath, contentElementTypeAlias]) => {
-                    this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
+                observeMultiple([
+                    context.contentKey,
+                    context.settingsKey,
+                    context.workspaceEditContentPath,
+                    context.contentElementTypeAlias,
+                    context.contentElementTypeKey
+                ]),
+                async ([
+                    contentUdi,
+                    settingsUdi,
+                    workspaceEditContentPath,
+                    contentElementTypeAlias,
+                    contentElementTypeKey
+                ]) => {
+                    this._blockContext.contentUdi = contentUdi ?? '';
+                    this._blockContext.settingsUdi = settingsUdi ?? '';
                     this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
+                    this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
+                    this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
 
-                    await this.#renderBlockPreview();
+                    await this.#observeBlockPropertyValue();
+                }
+            );
+        });
+    }
+
+    #observeBlockPropertyValue() {
+        this.consumeContext(UMB_BLOCK_LIST_MANAGER_CONTEXT, (context) => {
+            this.observe(
+                observeMultiple([
+                    context.contents,
+                    context.settings,
+                    context.layouts,
+                    context.exposes,
+                    context.propertyAlias
+                ]),
+                async ([contents, settings, layouts, exposes, propertyAlias]) => {
+                    this._blockContext.blockEditorAlias = propertyAlias ?? '';
+
+                    this.blockListValue = {
+                        contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
+                        settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
+                        expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
+                        layout: {
+                            ['Umbraco.BlockList']: layouts?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? []
+                        }
+                    };
+
+                    this.#renderBlockPreview();
                 }
             );
         });
@@ -147,6 +163,8 @@ export class BlockListPreviewCustomView
                 nodeKey: context.unique,
                 contentElementAlias: context.contentElementTypeAlias,
                 documentTypeUnique: context.documentTypeUnique,
+                contentUdi: context.contentUdi,
+                settingsUdi: context.settingsUdi,
                 culture: context.culture,
                 requestBody: JSON.stringify(this._blockListValue)
             };

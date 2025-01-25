@@ -118,23 +118,30 @@ namespace Umbraco.Community.BlockPreview.Services
             string contentKey = "",
             string? settingsKey = default)
         {
-            BlockGridEditorDataConverter converter = new BlockGridEditorDataConverter(_jsonSerializer);
-            if (!converter.TryDeserialize(blockData, out BlockEditorData<BlockGridValue, BlockGridLayoutItem>? blockValue))
+            var blockValue = _blockGridEditorValues.DeserializeAndClean(blockData);
+            if (blockValue == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
+            if (!blockValue.BlockValue.ContentData.Any())
+            {
+                BlockGridEditorDataConverter converter = new BlockGridEditorDataConverter(_jsonSerializer);
+                converter.TryDeserialize(blockData, out blockValue);
+            }
+
             if (!Guid.TryParse(contentKey, out Guid contentGuidParsed))
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentKey);
+            return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentKey);
 
             Guid.TryParse(settingsKey!, out Guid settingsGuidParsed);
 
-            BlockItemData? contentData = blockValue.BlockValue?.ContentData.FirstOrDefault(x => x.Key == contentGuidParsed);
+            FormatBlockData(blockValue?.BlockValue.ContentData);
+            BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault(x => x.Key == contentGuidParsed);
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
 
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
-                ? blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
+                ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
 
             IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, content) : default;
@@ -155,7 +162,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (blockInstance == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
-            var layoutItems = blockValue.BlockValue?.GetLayouts();
+            var layoutItems = blockValue?.BlockValue?.GetLayouts();
             BlockGridLayoutItem? matchingLayout = GetMatchingGridLayout(layoutItems!, blockInstance);
 
             IContentType? documentType = GetContentType(documentTypeUnique);
@@ -183,7 +190,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (matchingBlockConfig == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidMatchingBlockGridConfiguration);
 
-            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlockConfig, matchingLayout!, blockValue, content, documentTypeUnique, blockEditorAlias);
+            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlockConfig, matchingLayout!, blockValue!, content, documentTypeUnique, blockEditorAlias);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);
@@ -194,19 +201,36 @@ namespace Umbraco.Community.BlockPreview.Services
             IPublishedContent content,
             ControllerContext controllerContext,
             string blockEditorAlias = "",
-            Guid documentTypeUnique = default)
+            Guid documentTypeUnique = default,
+            string contentKey = "",
+            string? settingsKey = default)
         {
-            BlockListEditorDataConverter converter = new BlockListEditorDataConverter(_jsonSerializer);
-            if (!converter.TryDeserialize(blockData, out BlockEditorData<BlockListValue, BlockListLayoutItem>? blockValue))
+            var blockValue = _blockListEditorValues.DeserializeAndClean(blockData);
+            if (blockValue == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
-            BlockItemData? contentData = blockValue.BlockValue?.ContentData.FirstOrDefault();
+            if (!blockValue.BlockValue.ContentData.Any())
+            {
+                BlockListEditorDataConverter converter = new BlockListEditorDataConverter(_jsonSerializer);
+                converter.TryDeserialize(blockData, out blockValue);
+            }
+
+            if (!Guid.TryParse(contentKey, out Guid contentGuidParsed))
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentKey);
+
+            Guid.TryParse(settingsKey!, out Guid settingsGuidParsed);
+
+            FormatBlockData(blockValue?.BlockValue.ContentData);
+            BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault(x => x.Key == contentGuidParsed);
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
 
-            BlockItemData? settingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault();
+            BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
+                ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
+                : null;
+
             IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, content) : default;
 
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
@@ -306,11 +330,9 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError, IPublishedElement owner)
         {
-            var properties = data.Values;
-
-            for (int i = 0; i < properties.Count(); i++)
+            for (int i = 0; i < data.Values.Count(); i++)
             {
-                var property = properties.ElementAt(i);
+                var property = data.Values.ElementAt(i);
                 var value = property.Value;
                 string? propertyAsString = value?.ToString();
 
@@ -342,8 +364,14 @@ namespace Umbraco.Community.BlockPreview.Services
             return element;
         }
 
-        private void FormatBlockData(List<BlockItemData> blockData)
+        private void FormatBlockData(List<BlockItemData>? blockData)
         {
+            if (blockData == null) 
+                return;
+
+            if (blockData.Any() == false)
+                return;
+
             foreach (var contentData in blockData)
             {
                 foreach (var propertyData in contentData.Values)
@@ -352,7 +380,7 @@ namespace Umbraco.Community.BlockPreview.Services
                     {
                         if (Guid.TryParse(propertyData.Value?.ToString(), out Guid parsedGuid))
                         {
-                            propertyData.Value = StringUdi.Create("document", parsedGuid).UriValue;
+                            propertyData.Value = StringUdi.Create("document", parsedGuid).UriValue.ToString();
                         }
                     }
 
@@ -486,11 +514,11 @@ namespace Umbraco.Community.BlockPreview.Services
                     _razorViewEngine.FindView(controllerContext, contentAlias?.ToPascalCase()!, false);
 
                 if (!viewResult.Success)
-                    return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ViewNotFound);
+                    return string.Format(Constants.ErrorMessages.WarningTemplate, string.Format(Constants.ErrorMessages.ViewNotFound, viewResult.ViewName, string.Join("<br/>", viewResult.SearchedLocations)));
             }
 
             if (viewResult.View == null)
-                return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ViewNotFound);
+                return string.Format(Constants.ErrorMessages.WarningTemplate, string.Format(Constants.ErrorMessages.ViewNotFound, viewResult.ViewName, string.Join("<br/>", viewResult.SearchedLocations)));
 
             var actionContext = new ActionContext(controllerContext.HttpContext, new RouteData(), new ActionDescriptor());
 

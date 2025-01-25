@@ -82,6 +82,14 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		public virtual string Headline => this.Value<string>(_publishedValueFallback, "headline");
 
 		///<summary>
+		/// Height
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.2+559c6c9")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("height")]
+		public virtual string Height => this.Value<string>(_publishedValueFallback, "height");
+
+		///<summary>
 		/// Image
 		///</summary>
 		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "15.1.2+559c6c9")]

@@ -140,6 +140,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
 
+            FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
@@ -227,6 +228,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
 
+            FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
@@ -264,13 +266,15 @@ namespace Umbraco.Community.BlockPreview.Services
             if (!converter.TryDeserialize(blockData, out BlockEditorData<RichTextBlockValue, RichTextBlockLayoutItem>? blockValue))
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
-            BlockItemData? contentData = blockValue.BlockValue?.ContentData.FirstOrDefault();
+            FormatBlockData(blockValue?.BlockValue.ContentData);
+            BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault();
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
 
-            BlockItemData? settingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault();
+            FormatBlockData(blockValue?.BlockValue.SettingsData);
+            BlockItemData? settingsData = blockValue?.BlockValue.SettingsData.FirstOrDefault();
             IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, content) : default;
 
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
@@ -342,6 +346,7 @@ namespace Umbraco.Community.BlockPreview.Services
                     if (blockValue != null)
                     {
                         FormatBlockData(blockValue.BlockValue.ContentData);
+                        FormatBlockData(blockValue.BlockValue.SettingsData);
                         property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                     }
                 }
@@ -352,6 +357,7 @@ namespace Umbraco.Community.BlockPreview.Services
                     if (blockValue != null)
                     {
                         FormatBlockData(blockValue.BlockValue.ContentData);
+                        FormatBlockData(blockValue.BlockValue.SettingsData);
                         property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                     }
                 }

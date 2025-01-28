@@ -7,13 +7,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Cache;
+using Umbraco.Cms.Core.Cache.PropertyEditors;
 using Umbraco.Cms.Core.Composing;
-using Umbraco.Cms.Core.Configuration.Models;
-using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
+using Umbraco.Cms.Infrastructure.HybridCache;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Community.BlockPreview.Services;
 using Umbraco.Extensions;
@@ -61,7 +61,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
             ISiteDomainMapper siteDomainMapper,
             IOptionsMonitor<BlockPreviewOptions> blockPreviewSettings,
             ITypeFinder typeFinder,
-            AppCaches appCaches)
+            AppCaches appCaches,
+            IElementsCache elementsCache,
+            IBlockEditorElementTypeCache blockEditorElementTypeCache)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -257,11 +259,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private async Task<string?> GetCurrentCulture(string? culture, IPublishedContent? content = null)
         {
             // if in a culture variant setup also set the correct language.
-            //var currentCulture = string.IsNullOrWhiteSpace(culture)
-            //   ? content?.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
-            //   : culture;
+            var currentCulture = string.IsNullOrWhiteSpace(culture)
+               ? content?.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
+               : culture;
 
-            string? currentCulture = "";
             if (string.IsNullOrEmpty(currentCulture) || culture == "undefined")
                 currentCulture = await _languageService.GetDefaultIsoCodeAsync();
 

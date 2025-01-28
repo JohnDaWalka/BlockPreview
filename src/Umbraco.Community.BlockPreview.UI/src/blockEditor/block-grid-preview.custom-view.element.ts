@@ -1,12 +1,14 @@
+import { UMB_BLOCK_WORKSPACE_CONTEXT } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
-import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document";
+import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
 import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
 import { BlockPreviewService, PreviewGridBlockData } from "../api";
+import BlockPreviewContext from '../context/block-preview.context';
 import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
 
 const elementName = "block-grid-preview";
@@ -15,6 +17,9 @@ const elementName = "block-grid-preview";
 export class BlockGridPreviewCustomView
     extends UmbLitElement
     implements UmbBlockEditorCustomViewElement {
+
+    #blockPreviewContext?: BlockPreviewContext;
+    #documentWorkspaceContext?: UmbDocumentWorkspaceContext;
 
     @state()
     private _htmlMarkup: string = '';
@@ -28,15 +33,15 @@ export class BlockGridPreviewCustomView
     private _styleElement?: HTMLLinkElement;
 
     private _blockContext = {
-        unique: '',
-        documentTypeUnique: '',
-        contentUdi: '',
-        settingsUdi: '',
-        blockEditorAlias: '',
-        culture: '',
-        workspaceEditContentPath: '',
-        contentElementTypeAlias: '',
-        contentElementTypeKey: ''
+        unique: "",
+        documentTypeUnique: "",
+        contentUdi: "",
+        settingsUdi: "",
+        blockEditorAlias: "",
+        culture: "",
+        workspaceEditContentPath: "",
+        contentElementTypeAlias: "",
+        contentElementTypeKey: ""
     };
 
     private _blockGridValue: UmbBlockGridValueModel = {
@@ -61,7 +66,11 @@ export class BlockGridPreviewCustomView
 
     constructor() {
         super();
-        this.#setupContextObservers();
+
+        this.consumeContext(BLOCK_PREVIEW_CONTEXT, (context) => {
+            this.#blockPreviewContext = context;
+            this.#setupContextObservers();
+        });
     }
 
     #setupContextObservers() {
@@ -71,14 +80,12 @@ export class BlockGridPreviewCustomView
     }
 
     #observeBlockPreviewSettings() {
-        this.consumeContext(BLOCK_PREVIEW_CONTEXT, (context) => {
-            this.observe(context.settings, (settings) => {
-                if (settings?.blockGrid?.stylesheet) {
-                    this._styleElement = document.createElement('link');
-                    this._styleElement.rel = 'stylesheet';
-                    this._styleElement.href = settings.blockGrid.stylesheet as string;
-                }
-            });
+        this.observe(this.#blockPreviewContext?.settings, (settings) => {
+            if (settings?.blockGrid?.stylesheet) {
+                this._styleElement = document.createElement('link');
+                this._styleElement.rel = 'stylesheet';
+                this._styleElement.href = settings.blockGrid.stylesheet as string;
+            }
         });
     }
 
@@ -88,17 +95,31 @@ export class BlockGridPreviewCustomView
         });
     }
 
-    #observeDocumentWorkspace() {
-        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+    async #observeDocumentWorkspace() {
+        this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT).then((context) => {
+            this.#documentWorkspaceContext = context;
             this.observe(
                 observeMultiple([context.unique, context.contentTypeUnique]),
                 async ([unique, documentTypeUnique]) => {
                     this._blockContext.unique = unique?.toString() ?? '';
+                    this.#blockPreviewContext?.setUnique(this._blockContext.unique);
+
                     this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
-                    await this.#observeBlockValue();
+                    this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
+                    this.#observeBlockValue();
                 }
             );
         });
+
+        if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
+            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+                this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                    this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
+                    this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
+                    this.#observeBlockValue();
+                });
+            });
+        }
     }
 
     async #observeBlockValue() {
@@ -160,6 +181,13 @@ export class BlockGridPreviewCustomView
 
     async #renderBlockPreview() {
         const context = this._blockContext;
+        if (this.#blockPreviewContext != null && context.unique == '') {
+            context.unique = this.#blockPreviewContext.getUnique();
+        }
+        if (this.#blockPreviewContext != null && context.documentTypeUnique == '') {
+            context.documentTypeUnique = this.#blockPreviewContext.getDocumentTypeUnique();
+        }
+
         const isDataValid = this.#validatePreviewData(context);
 
         if (!isDataValid) {
@@ -197,7 +225,6 @@ export class BlockGridPreviewCustomView
     #validatePreviewData(context: typeof this._blockContext): boolean {
         return !!(
             context.unique != '' &&
-            context.documentTypeUnique != '' &&
             context.blockEditorAlias != '' &&
             context.contentUdi != '' &&
             context.contentElementTypeAlias != ''

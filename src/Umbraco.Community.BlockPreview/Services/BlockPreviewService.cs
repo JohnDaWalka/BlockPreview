@@ -566,11 +566,7 @@ namespace Umbraco.Community.BlockPreview.Services
             BlockGridItem blockInstance,
             BlockGridConfiguration config,
             BlockGridConfiguration.BlockGridBlockConfiguration matchingBlock,
-            BlockGridLayoutItem layoutItem,
-            BlockEditorData<BlockGridValue, BlockGridLayoutItem> blockValue,
-            IPublishedContent content,
-            Guid documentTypeUnique,
-            string blockEditorAlias)
+            BlockGridLayoutItem layoutItem)
         {
             blockInstance.AreaGridColumns = matchingBlock.AreaGridColumns ?? 12;
             blockInstance.GridColumns = config.GridColumns ?? 12;

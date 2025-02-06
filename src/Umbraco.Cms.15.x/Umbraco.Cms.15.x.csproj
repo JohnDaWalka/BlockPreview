@@ -5,14 +5,11 @@
 		<Nullable>enable</Nullable>
 		<RootNamespace>Umbraco.Cms._15.x</RootNamespace>
 	</PropertyGroup>
-	<ItemGroup>
-	  <Content Remove="appsettings-schema.blockpreview.json" />
-	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms" Version="15.1.2" />
-		<PackageReference Include="Umbraco.Cms.Core" Version="15.1.2" />
-		<PackageReference Include="Umbraco.Cms.StaticAssets" Version="15.1.2" />
+		<PackageReference Include="Umbraco.Cms" Version="15.2.0" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="15.2.0" />
+		<PackageReference Include="Umbraco.Cms.StaticAssets" Version="15.2.0" />
 		<PackageReference Include="uSync" Version="15.1.0" />
 	</ItemGroup>
 

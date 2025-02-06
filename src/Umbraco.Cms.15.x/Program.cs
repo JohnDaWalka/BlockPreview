@@ -12,12 +12,12 @@ builder.CreateUmbracoBuilder()
         options.BlockGrid = new()
         {
             Enabled = true,
-            //ContentTypes = [InspirationBlock.ModelTypeAlias],
             Stylesheet = "/css/myblockgridlayout.css"
         };
         options.BlockList = new()
         {
-            Enabled = true
+            Enabled = true,
+            Stylesheet = "/css/myblockgridlayout.css"
         };
         options.RichText.Enabled = true;
     })

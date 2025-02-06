@@ -30,6 +30,8 @@ export class BlockListPreviewCustomView
     @state()
     private _error: string | null = null;
 
+    private _styleElement?: HTMLLinkElement;
+
     private _blockContext = {
         unique: '',
         documentTypeUnique: '',
@@ -74,8 +76,19 @@ export class BlockListPreviewCustomView
     }
 
     #setupContextObservers() {
+        this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
         this.#observeDocumentWorkspace();
+    }
+
+    #observeBlockPreviewSettings() {
+        this.observe(this.#blockPreviewContext?.settings, (settings) => {
+            if (settings?.blockList?.stylesheet) {
+                this._styleElement = document.createElement('link');
+                this._styleElement.rel = 'stylesheet';
+                this._styleElement.href = settings.blockList.stylesheet as string;
+            }
+        });
     }
 
     #observePropertyDataset() {
@@ -234,6 +247,7 @@ export class BlockListPreviewCustomView
 
         if (this._htmlMarkup) {
             return html`
+                ${this._styleElement}
                 <a 
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
                     aria-label="Edit block"

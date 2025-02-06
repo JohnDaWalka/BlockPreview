@@ -73,16 +73,9 @@ export type AvailableMemberTypeCompositionResponseModel = {
     isCompatible: boolean;
 };
 
-export type BlockGridSettings = {
-    enabled: boolean;
-    viewLocations?: Array<(string)> | null;
-    contentTypes?: Array<(string)> | null;
-    stylesheet?: string | null;
-};
-
 export type BlockPreviewOptions = {
-    blockGrid: BlockGridSettings;
-    blockList: BlockTypeSettings;
+    blockGrid: BlockWithStylesheetSettings;
+    blockList: BlockWithStylesheetSettings;
     richText: BlockTypeSettings;
 };
 
@@ -90,6 +83,13 @@ export type BlockTypeSettings = {
     enabled: boolean;
     viewLocations?: Array<(string)> | null;
     contentTypes?: Array<(string)> | null;
+};
+
+export type BlockWithStylesheetSettings = {
+    enabled: boolean;
+    viewLocations?: Array<(string)> | null;
+    contentTypes?: Array<(string)> | null;
+    stylesheet?: string | null;
 };
 
 export type CalculatedUserStartNodesResponseModel = {
@@ -468,13 +468,16 @@ export type CurrenUserConfigurationResponseModel = {
      */
     usernameIsEmail: boolean;
     passwordConfiguration: PasswordConfigurationResponseModel;
+    allowChangePassword: boolean;
+    allowTwoFactor: boolean;
 };
 
 export type CurrentUserResponseModel = {
-    id: string;
     email: string;
     userName: string;
     name: string;
+    userGroupIds: Array<(ReferenceByIdModel)>;
+    id: string;
     languageIsoCode: string | null;
     documentStartNodeIds: Array<(ReferenceByIdModel)>;
     hasDocumentRootAccess: boolean;
@@ -692,6 +695,7 @@ export type DocumentPermissionPresentationModel = {
 
 export type DocumentRecycleBinItemResponseModel = {
     id: string;
+    createDate: string;
     hasChildren: boolean;
     parent?: ItemReferenceByIdResponseModel | null;
     documentType: DocumentTypeReferenceResponseModel;
@@ -721,6 +725,7 @@ export type DocumentTreeItemResponseModel = {
     noAccess: boolean;
     isTrashed: boolean;
     id: string;
+    createDate: string;
     isProtected: boolean;
     documentType: DocumentTypeReferenceResponseModel;
     variants: Array<(DocumentVariantItemResponseModel)>;
@@ -884,6 +889,8 @@ export type DocumentVariantResponseModel = {
     updateDate: string;
     state: DocumentVariantStateModel;
     publishDate?: string | null;
+    scheduledPublishDate?: string | null;
+    scheduledUnpublishDate?: string | null;
 };
 
 export enum DocumentVariantStateModel {
@@ -1046,7 +1053,8 @@ export type HealthCheckWithResultPresentationModel = {
 export enum HealthStatusModel {
     HEALTHY = 'Healthy',
     UNHEALTHY = 'Unhealthy',
-    REBUILDING = 'Rebuilding'
+    REBUILDING = 'Rebuilding',
+    CORRUPT = 'Corrupt'
 }
 
 export type HealthStatusResponseModel = {
@@ -1214,6 +1222,7 @@ export type MediaItemResponseModel = {
 
 export type MediaRecycleBinItemResponseModel = {
     id: string;
+    createDate: string;
     hasChildren: boolean;
     parent?: ItemReferenceByIdResponseModel | null;
     mediaType: MediaTypeReferenceResponseModel;
@@ -1241,6 +1250,7 @@ export type MediaTreeItemResponseModel = {
     noAccess: boolean;
     isTrashed: boolean;
     id: string;
+    createDate: string;
     mediaType: MediaTypeReferenceResponseModel;
     variants: Array<(VariantItemResponseModel)>;
 };
@@ -2222,6 +2232,7 @@ export type ServerConfigurationItemResponseModel = {
 export type ServerConfigurationResponseModel = {
     allowPasswordReset: boolean;
     versionCheckPeriod: number;
+    allowLocalLogin: boolean;
 };
 
 export type ServerInformationResponseModel = {
@@ -2699,6 +2710,8 @@ export type UserConfigurationResponseModel = {
     canInviteUsers: boolean;
     usernameIsEmail: boolean;
     passwordConfiguration: PasswordConfigurationResponseModel;
+    allowChangePassword: boolean;
+    allowTwoFactor: boolean;
 };
 
 export type UserDataModel = {
@@ -5404,6 +5417,13 @@ export type GetWebhookEventsData = {
 };
 
 export type GetWebhookEventsResponse = PagedWebhookEventModel;
+
+export type GetWebhookLogsData = {
+    skip?: number;
+    take?: number;
+};
+
+export type GetWebhookLogsResponse = WebhookResponseModel;
 
 export type $OpenApiTs = {
     '/umbraco/management/api/v1/block-preview/preview/grid': {
@@ -11844,10 +11864,6 @@ export type $OpenApiTs = {
                  * OK
                  */
                 200: ServerConfigurationResponseModel;
-                /**
-                 * The resource is protected and requires an authentication token
-                 */
-                401: unknown;
             };
         };
     };
@@ -13981,6 +13997,25 @@ export type $OpenApiTs = {
                  * The authenticated user do not have access to this resource
                  */
                 403: unknown;
+            };
+        };
+    };
+    '/umbraco/management/api/v1/webhook/logs': {
+        get: {
+            req: GetWebhookLogsData;
+            res: {
+                /**
+                 * OK
+                 */
+                200: WebhookResponseModel;
+                /**
+                 * The resource is protected and requires an authentication token
+                 */
+                401: unknown;
+                /**
+                 * Not Found
+                 */
+                404: ProblemDetails;
             };
         };
     };

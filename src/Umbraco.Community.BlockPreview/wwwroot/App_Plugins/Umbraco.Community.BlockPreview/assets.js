@@ -729,7 +729,6 @@ Xe = function() {
   var t;
   this.observe((t = _(this, d)) == null ? void 0 : t.settings, (e) => {
     var r;
-    debugger;
     (r = e == null ? void 0 : e.blockList) != null && r.stylesheet && (this._styleElement = document.createElement("link"), this._styleElement.rel = "stylesheet", this._styleElement.href = e.blockList.stylesheet);
   });
 };

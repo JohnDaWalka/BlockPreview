@@ -191,7 +191,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (matchingBlockConfig == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidMatchingBlockGridConfiguration);
 
-            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlockConfig, matchingLayout!, blockValue!, content, documentTypeUnique, blockEditorAlias);
+            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlockConfig, matchingLayout!);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);

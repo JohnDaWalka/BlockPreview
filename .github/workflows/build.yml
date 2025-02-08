@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - v3/dev
+      - v2/dev
       - v1/dev
   pull_request:
     types: [opened, synchronize, reopened]

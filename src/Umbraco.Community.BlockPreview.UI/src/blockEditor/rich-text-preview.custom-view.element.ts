@@ -14,6 +14,18 @@ export class RichTextPreviewCustomView
     extends UmbLitElement
     implements UmbBlockEditorCustomViewElement {
 
+    @property({ attribute: false })
+    content?: UmbBlockDataType;
+
+    @property({ attribute: false })
+    settingsData?: UmbBlockDataType;
+
+    @property({ attribute: false })
+    contentKey?: string;
+
+    @property({ attribute: false })
+    config?: UmbBlockEditorCustomViewConfiguration;
+
     @state()
     htmlMarkup: string | undefined = "";
 
@@ -23,6 +35,8 @@ export class RichTextPreviewCustomView
     culture?: string = '';
     workspaceEditContentPath?: string;
     contentElementTypeAlias?: string;
+
+    private _previewTimeout: number | undefined;
 
     @state()
     private _blockRteValue: UmbBlockRteValueModel = {
@@ -55,6 +69,19 @@ export class RichTextPreviewCustomView
         this.unique = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)?.[0];
 
         this.#observeBlockRteValue();
+    }
+
+    async updated(changedProperties: Map<string | number | symbol, unknown>) {
+        super.updated(changedProperties);
+
+        if (changedProperties.has('content')) {
+            if (this._previewTimeout) {
+                clearTimeout(this._previewTimeout);
+            }
+            this._previewTimeout = window.setTimeout(() => {
+                this.#renderBlockPreview();
+            }, 500);
+        }
     }
 
     #observeBlockRteValue(): void {

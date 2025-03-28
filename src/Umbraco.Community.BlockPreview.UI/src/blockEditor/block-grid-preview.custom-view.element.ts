@@ -1,5 +1,5 @@
-import { UMB_BLOCK_WORKSPACE_CONTEXT } from '@umbraco-cms/backoffice/block';
-import type { UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
+import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
+import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
 import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
@@ -21,6 +21,18 @@ export class BlockGridPreviewCustomView
     #blockPreviewContext?: BlockPreviewContext;
     #documentWorkspaceContext?: UmbDocumentWorkspaceContext;
 
+    @property({ attribute: false })
+    content?: UmbBlockDataType;
+
+    @property({ attribute: false })
+    settingsData?: UmbBlockDataType;
+
+    @property({ attribute: false })
+    contentKey?: string;
+
+    @property({ attribute: false })
+    config?: UmbBlockEditorCustomViewConfiguration;
+
     @state()
     private _htmlMarkup: string = '';
 
@@ -31,6 +43,8 @@ export class BlockGridPreviewCustomView
     private _error: string | null = null;
 
     private _styleElement?: HTMLLinkElement;
+
+    private _previewTimeout: number | undefined;
 
     private _blockContext = {
         unique: "",
@@ -71,6 +85,19 @@ export class BlockGridPreviewCustomView
             this.#blockPreviewContext = context;
             this.#setupContextObservers();
         });
+    }
+
+    async updated(changedProperties: Map<string | number | symbol, unknown>) {
+        super.updated(changedProperties);
+
+        if (changedProperties.has('content')) {
+            if (this._previewTimeout) {
+                clearTimeout(this._previewTimeout);
+            }
+            this._previewTimeout = window.setTimeout(() => {
+                this.#renderBlockPreview();
+            }, 500);
+        }
     }
 
     #setupContextObservers() {
@@ -173,7 +200,7 @@ export class BlockGridPreviewCustomView
                         }
                     };
 
-                    await this.#renderBlockPreview();
+                    //await this.#renderBlockPreview();
                 }
             );
         });

@@ -1,6 +1,6 @@
 import { UMB_BLOCK_LIST_ENTRY_CONTEXT, UMB_BLOCK_LIST_MANAGER_CONTEXT, UmbBlockListValueModel } from "@umbraco-cms/backoffice/block-list";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
-import type { UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
+import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
@@ -9,7 +9,7 @@ import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
 import { BlockPreviewService, PreviewListBlockData } from "../api";
 import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
 import BlockPreviewContext from "../context/block-preview.context";
-import { UMB_BLOCK_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/block";
+import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from "@umbraco-cms/backoffice/block";
 
 const elementName = "block-list-preview";
 
@@ -21,6 +21,18 @@ export class BlockListPreviewCustomView
     #blockPreviewContext?: BlockPreviewContext;
     #documentWorkspaceContext?: UmbDocumentWorkspaceContext;
 
+    @property({ attribute: false })
+    content?: UmbBlockDataType;
+
+    @property({ attribute: false })
+    settingsData?: UmbBlockDataType;
+
+    @property({ attribute: false })
+    contentKey?: string;
+
+    @property({ attribute: false })
+    config?: UmbBlockEditorCustomViewConfiguration;
+
     @state()
     private _htmlMarkup: string = '';
 
@@ -31,6 +43,8 @@ export class BlockListPreviewCustomView
     private _error: string | null = null;
 
     private _styleElement?: HTMLLinkElement;
+
+    private _previewTimeout: number | undefined;
 
     private _blockContext = {
         unique: '',
@@ -73,6 +87,19 @@ export class BlockListPreviewCustomView
             this.#blockPreviewContext = context;
             this.#setupContextObservers();
         });
+    }
+
+    async updated(changedProperties: Map<string | number | symbol, unknown>) {
+        super.updated(changedProperties);
+
+        if (changedProperties.has('content')) {
+            if (this._previewTimeout) {
+                clearTimeout(this._previewTimeout);
+            }
+            this._previewTimeout = window.setTimeout(() => {
+                this.#renderBlockPreview();
+            }, 500);
+        }
     }
 
     #setupContextObservers() {

@@ -53,6 +53,7 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly BlockEditorValues<BlockListValue, BlockListLayoutItem> _blockListEditorValues;
         private readonly BlockEditorValues<RichTextBlockValue, RichTextBlockLayoutItem> _richTextBlockEditorValues;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
+        private readonly ILogger<BlockPreviewService> _logger;
 
         private const string BLOCK_TYPE_CACHE_KEY = "BlockPreview_BlockType_{0}";
         private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
@@ -89,6 +90,7 @@ namespace Umbraco.Community.BlockPreview.Services
             _contentTypeService = contentTypeService;
             _webHostEnvironment = webHostEnvironment;
             _runtimeCache = appCaches.RuntimeCache;
+            _logger = logger;
 
             _blockGridEditorValues = new BlockEditorValues<BlockGridValue, BlockGridLayoutItem>(new BlockGridEditorDataConverter(jsonSerializer), elementTypeCache, logger);
             _blockListEditorValues = new BlockEditorValues<BlockListValue, BlockListLayoutItem>(new BlockListEditorDataConverter(jsonSerializer), elementTypeCache, logger);
@@ -262,9 +264,15 @@ namespace Umbraco.Community.BlockPreview.Services
             string blockEditorAlias = "",
             Guid documentTypeUnique = default)
         {
-            RichTextEditorBlockDataConverter converter = new RichTextEditorBlockDataConverter(_jsonSerializer);
-            if (!converter.TryDeserialize(blockData, out BlockEditorData<RichTextBlockValue, RichTextBlockLayoutItem>? blockValue))
+            var blockValue = _richTextBlockEditorValues.DeserializeAndClean(blockData);
+            if (blockValue == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
+
+            if (!blockValue.BlockValue.ContentData.Any())
+            {
+                RichTextEditorBlockDataConverter converter = new RichTextEditorBlockDataConverter(_jsonSerializer);
+                converter.TryDeserialize(blockData, out blockValue);
+            }
 
             FormatBlockData(blockValue?.BlockValue.ContentData);
             BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault();
@@ -359,6 +367,25 @@ namespace Umbraco.Community.BlockPreview.Services
                         FormatBlockData(blockValue.BlockValue.ContentData);
                         FormatBlockData(blockValue.BlockValue.SettingsData);
                         property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+                    }
+                }
+
+                if (propertyAsString?.Contains(nameof(RichTextBlockLayoutItem)) == true)
+                {
+                    RichTextPropertyEditorHelper.TryParseRichTextEditorValue(value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue);
+
+                    if (richTextEditorValue != null)
+                    {
+                        var blockValue = _richTextBlockEditorValues.DeserializeAndClean(_jsonSerializer.Serialize(richTextEditorValue.Blocks));
+                        if (blockValue != null)
+                        {
+                            FormatBlockData(blockValue.BlockValue.ContentData);
+                            FormatBlockData(blockValue.BlockValue.SettingsData);
+
+                            richTextEditorValue.Blocks = blockValue.BlockValue;
+
+                            property.Value = JsonSerializer.Serialize(richTextEditorValue, _jsonSerializerOptions);
+                        }
                     }
                 }
             }

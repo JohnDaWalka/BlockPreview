@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -29,6 +30,7 @@ using Umbraco.Cms.Infrastructure.Serialization;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.Models;
 using Umbraco.Extensions;
 using static Umbraco.Cms.Core.Constants;
 
@@ -420,6 +422,19 @@ namespace Umbraco.Community.BlockPreview.Services
                     else if (propertyData.Value is JsonObject jsonObject)
                     {
                         propertyData.Value = JsonSerializer.Serialize(jsonObject, _jsonSerializerOptions);
+                    }
+
+                    else if (propertyData.Value is JsonArray jsonArray)
+                    {
+                        if (propertyData.EditorAlias == PropertyEditors.Aliases.MultiNodeTreePicker)
+                        {
+                            List<EditorEntityReference>? convertedReferences = JsonSerializer.Deserialize<List<EditorEntityReference>>(propertyData.Value.ToString()!);
+                            IEnumerable<Udi>? convertedData = convertedReferences?.Select(x => StringUdi.Create(x.Type, x.Unique));
+                            string? stringifiedData = string.Join(",", convertedData!);
+                            propertyData.Value = stringifiedData;
+                        }
+
+                        else propertyData.Value = JsonSerializer.Serialize(jsonArray, _jsonSerializerOptions);
                     }
 
                     else if (propertyData.Value is List<string> list)

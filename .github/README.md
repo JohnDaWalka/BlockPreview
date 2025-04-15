@@ -230,7 +230,7 @@ Password: 1234567890
 ```
 
 ### Who do I talk to?
-This project is maintained by [Rick Butterfield](https://rickbutterfield.dev) and contributors. If you have any questions about the project please get in touch on [Twitter](https://twitter.com/rickbutterfield), or by raising an issue on GitHub.
+This project is maintained by [Rick Butterfield](https://rickbutterfield.dev) and contributors. If you have any questions about the project please get in touch on [Bluesky](https://bsky.app/profile/rickbutterfield), or by raising an issue on GitHub.
 
 ## Credits
 This package is entirely based on the amazing work done by [Dave Woestenborghs](https://github.com/dawoe) for [24days in Umbraco 2021](https://archive.24days.in/umbraco-cms/2021/advanced-blocklist-editor/). His code has been extended to support the new Block Grid editor in v10.4+ and turned into this package.
@@ -238,6 +238,6 @@ This package is entirely based on the amazing work done by [Dave Woestenborghs](
 [Matthew Wise](https://github.com/Matthew-Wise) also wrote a great article for [24days in Umbraco 2022](https://24days.in/umbraco-cms/2022/more-blocklist-editor/) which added the ability to surface `ViewComponents` and has allowed his code to be contributed.
 
 ## License
-Copyright &copy; 2022-2024 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
+Copyright &copy; 2022-2025 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
 
 Licensed under the [MIT License](https://github.com/rickbutterfield/Umbraco.Community.BlockPreview/blob/develop/LICENSE.md).

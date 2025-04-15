@@ -120,7 +120,8 @@ namespace Umbraco.Community.BlockPreview.Services
             string blockEditorAlias = "",
             Guid documentTypeUnique = default,
             string contentKey = "",
-            string? settingsKey = default)
+            string? settingsKey = default,
+            int? blockIndex = 0)
         {
             var blockValue = _blockGridEditorValues.DeserializeAndClean(blockData);
             if (blockValue == null)
@@ -197,7 +198,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             ConfigureBlockInstanceAreas(blockInstance, config, matchingBlockConfig, matchingLayout!);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig);
+            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig, blockIndex);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);
         }
 
@@ -484,7 +485,7 @@ namespace Umbraco.Community.BlockPreview.Services
             return null;
         }
 
-        private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default, BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlockConfig = null)
+        private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default, BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlockConfig = null, int? blockIndex = 0)
         {
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
@@ -497,6 +498,7 @@ namespace Umbraco.Community.BlockPreview.Services
             }
 
             viewData["blockPreview"] = true;
+            viewData["blockIndex"] = blockIndex;
 
             if (blockType == BlockType.BlockGrid)
                 viewData["blockGridPreview"] = true;

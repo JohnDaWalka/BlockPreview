@@ -1,4 +1,7 @@
-﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem<CardBlock>>
+﻿@using System.Text.Json
+@inherits UmbracoViewPage<BlockGridItem<CardBlock>>
+
+<pre>Block Index: @ViewData["blockIndex"]</pre>
 
 <div class="card @(Model.ColumnSpan == 6 ? "--medium" : null)">
 

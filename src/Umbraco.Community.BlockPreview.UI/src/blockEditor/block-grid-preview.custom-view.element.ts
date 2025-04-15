@@ -55,7 +55,8 @@ export class BlockGridPreviewCustomView
         culture: "",
         workspaceEditContentPath: "",
         contentElementTypeAlias: "",
-        contentElementTypeKey: ""
+        contentElementTypeKey: "",
+        blockIndex: 0
     };
 
     private _blockGridValue: UmbBlockGridValueModel = {
@@ -200,7 +201,7 @@ export class BlockGridPreviewCustomView
                         }
                     };
 
-                    //await this.#renderBlockPreview();
+                    this._blockContext.blockIndex = contents.indexOf(this.blockGridValue.contentData[0]);
                 }
             );
         });
@@ -235,7 +236,8 @@ export class BlockGridPreviewCustomView
                 contentUdi: context.contentUdi,
                 settingsUdi: context.settingsUdi,
                 culture: context.culture,
-                requestBody: JSON.stringify(this.blockGridValue)
+                requestBody: JSON.stringify(this.blockGridValue),
+                blockIndex: context.blockIndex
             };
 
             const { data } = await tryExecuteAndNotify(this, BlockPreviewService.previewGridBlock(previewData));

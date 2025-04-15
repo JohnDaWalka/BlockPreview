@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Cache.PropertyEditors;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
@@ -96,7 +95,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] string? culture = "",
             [FromQuery] Guid documentTypeUnique = default,
             [FromQuery] string contentUdi = "",
-            [FromQuery] string? settingsUdi = default)
+            [FromQuery] string? settingsUdi = default,
+            [FromQuery] int? blockIndex = 0)
         {
             string markup;
 
@@ -110,7 +110,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderGridBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi);
+                    markup = await _blockPreviewService.RenderGridBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi, blockIndex);
                 }
                 catch (Exception ex)
                 {

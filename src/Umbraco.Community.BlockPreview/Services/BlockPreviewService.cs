@@ -315,7 +315,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (string.IsNullOrEmpty(contentTypeAlias))
                 return null;
 
-            var cacheKey = string.Format(BLOCK_TYPE_CACHE_KEY, contentTypeAlias);
+            var cacheKey = string.Format(Constants.CacheKeys.BlockType, contentTypeAlias);
             return _runtimeCache.GetCacheItem(cacheKey, () =>
             {
                 return _typeFinder
@@ -326,7 +326,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private IContentType? GetContentType(Guid documentTypeUnique)
         {
-            var cacheKey = string.Format(CONTENT_TYPE_CACHE_KEY, documentTypeUnique);
+            var cacheKey = string.Format(Constants.CacheKeys.ContentType, documentTypeUnique);
             return _runtimeCache.GetCacheItem(cacheKey, () =>
             {
                 return _contentTypeService.Get(documentTypeUnique);
@@ -335,10 +335,10 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private async Task<IDataType?> GetDataType(Guid dataTypeKey)
         {
-            var cacheKey = string.Format(DATA_TYPE_CACHE_KEY, dataTypeKey);
-            return await _runtimeCache.GetCacheItem(cacheKey, async () =>
+            var cacheKey = string.Format(Constants.CacheKeys.DataType, dataTypeKey);
+            return await _runtimeCache.GetCacheItemAsync(cacheKey, async () =>
             {
-                var dataType = await _dataTypeService.GetAsync(dataTypeKey);
+                IDataType? dataType = await _dataTypeService.GetAsync(dataTypeKey);
                 return dataType;
             }, CacheDuration);
         }

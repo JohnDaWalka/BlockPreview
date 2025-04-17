@@ -52,6 +52,7 @@ export class BlockPreviewService {
      * @param data.documentTypeUnique
      * @param data.contentUdi
      * @param data.settingsUdi
+     * @param data.blockIndex
      * @param data.requestBody
      * @returns string OK
      * @throws ApiError
@@ -67,7 +68,8 @@ export class BlockPreviewService {
                 culture: data.culture,
                 documentTypeUnique: data.documentTypeUnique,
                 contentUdi: data.contentUdi,
-                settingsUdi: data.settingsUdi
+                settingsUdi: data.settingsUdi,
+                blockIndex: data.blockIndex
             },
             body: data.requestBody,
             mediaType: 'application/json',

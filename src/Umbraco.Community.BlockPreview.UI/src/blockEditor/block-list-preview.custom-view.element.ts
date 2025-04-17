@@ -55,7 +55,8 @@ export class BlockListPreviewCustomView
         culture: '',
         workspaceEditContentPath: '',
         contentElementTypeAlias: '',
-        contentElementTypeKey: ''
+        contentElementTypeKey: '',
+        blockIndex: 0
     };
 
     @state()
@@ -202,6 +203,8 @@ export class BlockListPreviewCustomView
                         }
                     };
 
+                    this._blockContext.blockIndex = contents?.indexOf(this.blockListValue.contentData[0]);
+
                     this.#renderBlockPreview();
                 }
             );
@@ -236,7 +239,8 @@ export class BlockListPreviewCustomView
                 contentUdi: context.contentUdi,
                 settingsUdi: context.settingsUdi,
                 culture: context.culture,
-                requestBody: JSON.stringify(this.blockListValue)
+                blockIndex: context.blockIndex,
+                requestBody: JSON.stringify(this.blockListValue),
             };
 
             const { data } = await tryExecuteAndNotify(this, BlockPreviewService.previewListBlock(previewData));

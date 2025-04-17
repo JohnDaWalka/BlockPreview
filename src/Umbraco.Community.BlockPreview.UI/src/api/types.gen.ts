@@ -3011,6 +3011,7 @@ export type PreviewGridBlockResponse = (string);
 
 export type PreviewListBlockData = {
     blockEditorAlias?: string;
+    blockIndex?: number;
     contentElementAlias?: string;
     contentUdi?: string;
     culture?: string;

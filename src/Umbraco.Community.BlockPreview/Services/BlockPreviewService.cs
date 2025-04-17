@@ -57,9 +57,6 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly JsonSerializerOptions _jsonSerializerOptions;
         private readonly ILogger<BlockPreviewService> _logger;
 
-        private const string BLOCK_TYPE_CACHE_KEY = "BlockPreview_BlockType_{0}";
-        private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
-        private const string DATA_TYPE_CACHE_KEY = "BlockPreview_DataType_{0}";
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
         public BlockPreviewService(
@@ -209,7 +206,8 @@ namespace Umbraco.Community.BlockPreview.Services
             string blockEditorAlias = "",
             Guid documentTypeUnique = default,
             string contentKey = "",
-            string? settingsKey = default)
+            string? settingsKey = default,
+            int? blockIndex = 0)
         {
             var blockValue = _blockListEditorValues.DeserializeAndClean(blockData);
             if (blockValue == null)
@@ -256,7 +254,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (blockInstance == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockList);
+            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockList, null, blockIndex);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockList);
         }
 

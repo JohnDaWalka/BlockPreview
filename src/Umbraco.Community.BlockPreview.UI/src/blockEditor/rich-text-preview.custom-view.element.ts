@@ -4,8 +4,8 @@ import { css, customElement, html, ifDefined, property, state, unsafeHTML } from
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_CONTEXT, UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
-import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
-import { BlockPreviewService, PreviewRichTextMarkupData } from "../api";
+import { tryExecute, UmbApiError } from "@umbraco-cms/backoffice/resources";
+import { BlockPreviewService } from "../api";
 import { UmbBlockDataType } from '@umbraco-cms/backoffice/block';
 
 const elementName = "rich-text-preview";
@@ -64,7 +64,9 @@ export class RichTextPreviewCustomView
         super();
 
         this.consumeContext(UMB_PROPERTY_DATASET_CONTEXT, async (instance) => {
-            this.culture = instance.getVariantId().culture ?? "";
+            if (instance) {
+                this.culture = instance.getVariantId().culture ?? "";
+            }
         });
 
         this.unique = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)?.[0];
@@ -87,38 +89,42 @@ export class RichTextPreviewCustomView
 
     #observeBlockRteValue(): void {
         this.consumeContext(UMB_PROPERTY_CONTEXT, (context) => {
-            this.observe(
-                observeMultiple([context.alias, context.value]),
-                async ([alias, value]) => {
-                    this.blockEditorAlias = alias;
+            if (context) {
+                this.observe(
+                    observeMultiple([context.alias, context.value]),
+                    async ([alias, value]) => {
+                        this.blockEditorAlias = alias;
 
-                    if (value.hasOwnProperty('blocks')) {
-                        if (value.blocks.length !== 0) {
-                            this.blockRteValue = {
-                                ...this.blockRteValue,
-                                contentData: value.blocks.contentData!,
-                                settingsData: value.blocks.settingsData!,
-                                expose: value.blocks.expose!,
-                                layout: value.blocks.layout!
+                        if (value.hasOwnProperty('blocks')) {
+                            if (value.blocks.length !== 0) {
+                                this.blockRteValue = {
+                                    ...this.blockRteValue,
+                                    contentData: value.blocks.contentData!,
+                                    settingsData: value.blocks.settingsData!,
+                                    expose: value.blocks.expose!,
+                                    layout: value.blocks.layout!
+                                }
                             }
-                        }
 
-                        this.#observeBlockValue();
-                    }
-                });
+                            this.#observeBlockValue();
+                        }
+                    });
+            }
         });
     }
 
     #observeBlockValue(): void {
         this.consumeContext(UMB_BLOCK_RTE_ENTRY_CONTEXT, (context) => {
-            this.observe(
-                observeMultiple([context.workspaceEditContentPath, context.contentElementTypeAlias]),
-                async ([workspaceEditContentPath, contentElementTypeAlias]) => {
-                    this.contentElementTypeAlias = contentElementTypeAlias;
-                    this.workspaceEditContentPath = workspaceEditContentPath;
+            if (context) {
+                this.observe(
+                    observeMultiple([context.workspaceEditContentPath, context.contentElementTypeAlias]),
+                    async ([workspaceEditContentPath, contentElementTypeAlias]) => {
+                        this.contentElementTypeAlias = contentElementTypeAlias;
+                        this.workspaceEditContentPath = workspaceEditContentPath;
 
-                    await this.#renderBlockPreview();
-                });
+                        await this.#renderBlockPreview();
+                    });
+            }
         });
     }
 
@@ -129,17 +135,21 @@ export class RichTextPreviewCustomView
             !this.blockRteValue.contentData ||
             !this.blockRteValue.layout) return;
 
-        const previewData: PreviewRichTextMarkupData = {
-            blockEditorAlias: this.blockEditorAlias,
-            nodeKey: this.unique,
-            contentElementAlias: this.contentElementTypeAlias,
-            culture: this.culture,
-            requestBody: JSON.stringify(this.blockRteValue)
-        };
+        const { data, error } = await tryExecute(this, BlockPreviewService.previewRichTextMarkup({
+            body: JSON.stringify(this.blockRteValue), query: {
+                blockEditorAlias: this.blockEditorAlias,
+                nodeKey: this.unique,
+                contentElementAlias: this.contentElementTypeAlias,
+                culture: this.culture
+            }
+        }), { disableNotifications: true });
 
-        const { data } = await tryExecuteAndNotify(this, BlockPreviewService.previewRichTextMarkup(previewData));
-
-        if (data) this.htmlMarkup = data;
+        if (data) {
+            this.htmlMarkup = data ?? '';
+        }
+        else if (UmbApiError.isUmbApiError(error)) {
+            throw error;
+        }
     }
 
     render() {

@@ -9,6 +9,7 @@ using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
@@ -35,6 +36,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly BlockPreviewOptions _blockPreviewSettings;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly ITypeFinder _typeFinder;
+        private readonly IDocumentCacheService _documentCacheService;
+        private readonly IPublishedContentTypeCache _contentTypeCache;
 
         private const string RENDER_ERROR = "<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{0}</pre></div>";
         private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-warning\">Strongly typed models must be generated and exist on disk for BlockPreview to work.</div>";
@@ -59,7 +62,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IOptionsMonitor<BlockPreviewOptions> blockPreviewSettings,
             ITypeFinder typeFinder,
             AppCaches appCaches,
-            IElementsCache elementsCache)
+            IElementsCache elementsCache,
+            IDocumentCacheService documentCacheService,
+            IPublishedContentTypeCache contentTypeCache)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -70,6 +75,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _blockPreviewSettings = blockPreviewSettings.CurrentValue;
             _typeFinder = typeFinder;
             _runtimeCache = appCaches.RuntimeCache;
+            _documentCacheService = documentCacheService;
+            _contentTypeCache = contentTypeCache;
         }
 
         #region Public
@@ -87,6 +94,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="blockIndex">The <see cref="int"/> that represents the block index</param>
         /// <returns>The markup to render in the preview.</returns>
         [HttpPost("preview/grid")]
+        [MapToApiVersion("1.0")]
         [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> PreviewGridBlock(
             [FromBody] string blockData,
@@ -142,6 +150,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="blockIndex">The <see cref="int"/> that represents the block index</param>
         /// <returns>The markup to render in the preview.</returns>
         [HttpPost("preview/list")]
+        [MapToApiVersion("1.0")]
         [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> PreviewListBlock(
             [FromBody] string blockData,
@@ -194,6 +203,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node</param>
         /// <returns>The markup to render in the preview.</returns>
         [HttpPost("preview/rte")]
+        [MapToApiVersion("1.0")]
         [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> PreviewRichTextMarkup(
             [FromBody] string blockData,
@@ -301,7 +311,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 var typeCacheKey = string.Format(CONTENT_TYPE_CACHE_KEY, documentTypeUnique);
                 var contentType = _runtimeCache.GetCacheItem(typeCacheKey, () =>
                 {
-                    return context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
+                    return _contentTypeCache.Get(PublishedItemType.Content, documentTypeUnique.GetValueOrDefault());
                 }, CacheDuration);
 
                 if (contentType != null)
@@ -309,7 +319,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     var cacheKey = string.Format(CONTENT_CACHE_KEY, nodeKey);
                     var cache = _runtimeCache.GetCacheItem(CONTENT_CACHE_KEY, () =>
                     {
-                        return context.Content?.GetByContentType(contentType).FirstOrDefault();
+                        return _documentCacheService.GetByContentType(contentType).FirstOrDefault();
                     }, CacheDuration);
                     return cache;
                 }

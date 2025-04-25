@@ -5,8 +5,8 @@ import { css, customElement, html, ifDefined, property, state, unsafeHTML } from
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
-import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
-import { BlockPreviewService, PreviewListBlockData } from "../api";
+import { tryExecute, UmbApiError } from "@umbraco-cms/backoffice/resources";
+import { BlockPreviewService } from "../api";
 import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
 import BlockPreviewContext from "../context/block-preview.context";
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from "@umbraco-cms/backoffice/block";
@@ -121,93 +121,103 @@ export class BlockListPreviewCustomView
 
     #observePropertyDataset() {
         this.consumeContext(UMB_PROPERTY_DATASET_CONTEXT, async (instance) => {
-            this._blockContext.culture = instance.getVariantId().culture ?? "";
+            if (instance) {
+                this._blockContext.culture = instance.getVariantId().culture ?? "";
+            }
         });
     }
 
     #observeDocumentWorkspace() {
         this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT).then((context) => {
-            this.#documentWorkspaceContext = context;
-            this.observe(
-                observeMultiple([context.unique, context.contentTypeUnique]),
-                async ([unique, documentTypeUnique]) => {
-                    this._blockContext.unique = unique?.toString() ?? '';
-                    this.#blockPreviewContext?.setUnique(this._blockContext.unique);
+            if (context) {
+                this.#documentWorkspaceContext = context;
+                this.observe(
+                    observeMultiple([context.unique, context.contentTypeUnique]),
+                    async ([unique, documentTypeUnique]) => {
+                        this._blockContext.unique = unique?.toString() ?? '';
+                        this.#blockPreviewContext?.setUnique(this._blockContext.unique);
 
-                    this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
-                    this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
-                    this.#observeBlockValue();
-                }
-            );
+                        this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
+                        this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
+                        this.#observeBlockValue();
+                    }
+                );
+            }
         });
 
         if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
             this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
-                this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
-                    this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
-                    this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
-                    this.#observeBlockValue();
-                });
+                if (context) {
+                    this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                        this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
+                        this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
+                        this.#observeBlockValue();
+                    });
+                }
             });
         }
     }
 
     #observeBlockValue() {
         this.consumeContext(UMB_BLOCK_LIST_ENTRY_CONTEXT, (context) => {
-            this.observe(
-                observeMultiple([
-                    context.contentKey,
-                    context.settingsKey,
-                    context.workspaceEditContentPath,
-                    context.contentElementTypeAlias,
-                    context.contentElementTypeKey
-                ]),
-                async ([
-                    contentUdi,
-                    settingsUdi,
-                    workspaceEditContentPath,
-                    contentElementTypeAlias,
-                    contentElementTypeKey
-                ]) => {
-                    this._blockContext.contentUdi = contentUdi ?? '';
-                    this._blockContext.settingsUdi = settingsUdi ?? '';
-                    this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
-                    this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
-                    this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
+            if (context) {
+                this.observe(
+                    observeMultiple([
+                        context.contentKey,
+                        context.settingsKey,
+                        context.workspaceEditContentPath,
+                        context.contentElementTypeAlias,
+                        context.contentElementTypeKey
+                    ]),
+                    async ([
+                        contentUdi,
+                        settingsUdi,
+                        workspaceEditContentPath,
+                        contentElementTypeAlias,
+                        contentElementTypeKey
+                    ]) => {
+                        this._blockContext.contentUdi = contentUdi ?? '';
+                        this._blockContext.settingsUdi = settingsUdi ?? '';
+                        this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
+                        this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
+                        this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
 
-                    await this.#observeBlockPropertyValue();
-                }
-            );
+                        await this.#observeBlockPropertyValue();
+                    }
+                );
+            }
         });
     }
 
     #observeBlockPropertyValue() {
         this.consumeContext(UMB_BLOCK_LIST_MANAGER_CONTEXT, (context) => {
-            this.observe(
-                observeMultiple([
-                    context.contents,
-                    context.settings,
-                    context.layouts,
-                    context.exposes,
-                    context.propertyAlias
-                ]),
-                async ([contents, settings, layouts, exposes, propertyAlias]) => {
-                    this._blockContext.blockEditorAlias = propertyAlias ?? '';
+            if (context) {
+                this.observe(
+                    observeMultiple([
+                        context.contents,
+                        context.settings,
+                        context.layouts,
+                        context.exposes,
+                        context.propertyAlias
+                    ]),
+                    async ([contents, settings, layouts, exposes, propertyAlias]) => {
+                        this._blockContext.blockEditorAlias = propertyAlias ?? '';
 
-                    this.blockListValue = {
-                        contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
-                        settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
-                        expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
-                        layout: {
-                            ['Umbraco.BlockList']: layouts?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? []
-                        }
-                    };
+                        this.blockListValue = {
+                            contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
+                            settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
+                            expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
+                            layout: {
+                                ['Umbraco.BlockList']: layouts?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? []
+                            }
+                        };
 
-                    this._blockContext.blockIndex = contents?.indexOf(this.blockListValue.contentData[0]);
+                        this._blockContext.blockIndex = contents?.indexOf(this.blockListValue.contentData[0]);
 
-                    this.#renderBlockPreview();
-                }
-            );
+                        this.#renderBlockPreview();
+                    }
+                );
+            }
         });
     }
 
@@ -231,22 +241,26 @@ export class BlockListPreviewCustomView
         this._error = null;
 
         try {
-            const previewData: PreviewListBlockData = {
-                blockEditorAlias: context.blockEditorAlias,
-                nodeKey: context.unique,
-                contentElementAlias: context.contentElementTypeAlias,
-                documentTypeUnique: context.documentTypeUnique,
-                contentUdi: context.contentUdi,
-                settingsUdi: context.settingsUdi,
-                culture: context.culture,
-                blockIndex: context.blockIndex,
-                requestBody: JSON.stringify(this.blockListValue),
-            };
-
-            const { data } = await tryExecuteAndNotify(this, BlockPreviewService.previewListBlock(previewData));
-
-            this._htmlMarkup = data ?? '';
-            this._isLoading = false;
+            const { data, error } = await tryExecute(this, BlockPreviewService.previewListBlock({
+                body: JSON.stringify(this.blockListValue), query: {
+                    blockEditorAlias: context.blockEditorAlias,
+                    nodeKey: context.unique,
+                    contentElementAlias: context.contentElementTypeAlias,
+                    documentTypeUnique: context.documentTypeUnique,
+                    contentUdi: context.contentUdi,
+                    settingsUdi: context.settingsUdi,
+                    culture: context.culture,
+                    blockIndex: context.blockIndex,
+                }
+            }));
+            if (data) {
+                this._htmlMarkup = data ?? '';
+                this._isLoading = false;
+            }
+            else if (UmbApiError.isUmbApiError(error)) {
+                this._error = error.message;
+                this._isLoading = false;
+            }
         } catch (error) {
             this._error = 'Failed to render block preview';
             this._isLoading = false;

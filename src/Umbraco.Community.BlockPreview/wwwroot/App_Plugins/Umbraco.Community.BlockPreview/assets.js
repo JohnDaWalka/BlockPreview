@@ -1,331 +1,438 @@
-var Qe = Object.defineProperty;
-var ye = (e) => {
-  throw TypeError(e);
+var fe = (t) => {
+  throw TypeError(t);
 };
-var Ze = (e, t, r) => t in e ? Qe(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r;
-var me = (e, t, r) => Ze(e, typeof t != "symbol" ? t + "" : t, r), _e = (e, t, r) => t.has(e) || ye("Cannot " + r);
-var p = (e, t, r) => (_e(e, t, "read from private field"), r ? r.call(e) : t.get(e)), P = (e, t, r) => t.has(e) ? ye("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), $ = (e, t, r, o) => (_e(e, t, "write to private field"), o ? o.call(e, r) : t.set(e, r), r);
-import { UMB_AUTH_CONTEXT as et } from "@umbraco-cms/backoffice/auth";
-import { tryExecute as H, UmbApiError as oe } from "@umbraco-cms/backoffice/resources";
-import { UmbControllerBase as ge } from "@umbraco-cms/backoffice/class-api";
-import { UMB_BLOCK_WORKSPACE_CONTEXT as Ce } from "@umbraco-cms/backoffice/block";
-import { UMB_BLOCK_GRID_ENTRY_CONTEXT as tt, UMB_BLOCK_GRID_MANAGER_CONTEXT as rt } from "@umbraco-cms/backoffice/block-grid";
-import { UMB_DOCUMENT_WORKSPACE_CONTEXT as Te } from "@umbraco-cms/backoffice/document";
-import { css as se, property as u, state as E, customElement as ne, html as S, ifDefined as ae, unsafeHTML as le } from "@umbraco-cms/backoffice/external/lit";
-import { UmbLitElement as ce } from "@umbraco-cms/backoffice/lit-element";
-import { observeMultiple as A, UmbObjectState as it, UmbStringState as ke } from "@umbraco-cms/backoffice/observable-api";
-import { UMB_PROPERTY_DATASET_CONTEXT as ue, UMB_PROPERTY_CONTEXT as ot } from "@umbraco-cms/backoffice/property";
-import { UmbContextToken as st } from "@umbraco-cms/backoffice/context-api";
-import { UMB_BLOCK_LIST_ENTRY_CONTEXT as nt, UMB_BLOCK_LIST_MANAGER_CONTEXT as at } from "@umbraco-cms/backoffice/block-list";
-import { UMB_BLOCK_RTE_ENTRY_CONTEXT as lt } from "@umbraco-cms/backoffice/block-rte";
-var ct = async (e, t) => {
-  let r = typeof t == "function" ? await t(e) : t;
-  if (r) return e.scheme === "bearer" ? `Bearer ${r}` : e.scheme === "basic" ? `Basic ${btoa(r)}` : r;
-}, ut = { bodySerializer: (e) => JSON.stringify(e, (t, r) => typeof r == "bigint" ? r.toString() : r) }, ht = (e) => {
-  switch (e) {
-    case "label":
-      return ".";
-    case "matrix":
-      return ";";
-    case "simple":
-      return ",";
-    default:
-      return "&";
+var ye = (t, e, i) => e.has(t) || fe("Cannot " + i);
+var d = (t, e, i) => (ye(t, e, "read from private field"), i ? i.call(t) : e.get(t)), R = (t, e, i) => e.has(t) ? fe("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), q = (t, e, i, r) => (ye(t, e, "write to private field"), r ? r.call(t, i) : e.set(t, i), i);
+import { UMB_AUTH_CONTEXT as He } from "@umbraco-cms/backoffice/auth";
+import { tryExecuteAndNotify as W } from "@umbraco-cms/backoffice/resources";
+import { UmbControllerBase as ke } from "@umbraco-cms/backoffice/class-api";
+import { UMB_BLOCK_WORKSPACE_CONTEXT as ve } from "@umbraco-cms/backoffice/block";
+import { UMB_BLOCK_GRID_ENTRY_CONTEXT as Fe, UMB_BLOCK_GRID_MANAGER_CONTEXT as Xe } from "@umbraco-cms/backoffice/block-grid";
+import { UMB_DOCUMENT_WORKSPACE_CONTEXT as we } from "@umbraco-cms/backoffice/document";
+import { css as Z, property as u, state as C, customElement as ee, html as D, ifDefined as te, unsafeHTML as ie } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement as re } from "@umbraco-cms/backoffice/lit-element";
+import { observeMultiple as A, UmbObjectState as Je, UmbStringState as be } from "@umbraco-cms/backoffice/observable-api";
+import { UMB_PROPERTY_DATASET_CONTEXT as oe, UMB_PROPERTY_CONTEXT as ze } from "@umbraco-cms/backoffice/property";
+import { UmbContextToken as Ye } from "@umbraco-cms/backoffice/context-api";
+import { UUIButtonElement as Qe } from "@umbraco-cms/backoffice/external/uui";
+import { UMB_BLOCK_LIST_ENTRY_CONTEXT as Ze, UMB_BLOCK_LIST_MANAGER_CONTEXT as et } from "@umbraco-cms/backoffice/block-list";
+import { UMB_BLOCK_RTE_ENTRY_CONTEXT as tt } from "@umbraco-cms/backoffice/block-rte";
+class _e extends Error {
+  constructor(e, i, r) {
+    super(r), this.name = "ApiError", this.url = i.url, this.status = i.status, this.statusText = i.statusText, this.body = i.body, this.request = e;
   }
-}, pt = (e) => {
-  switch (e) {
-    case "form":
-      return ",";
-    case "pipeDelimited":
-      return "|";
-    case "spaceDelimited":
-      return "%20";
-    default:
-      return ",";
+}
+class it extends Error {
+  constructor(e) {
+    super(e), this.name = "CancelError";
   }
-}, dt = (e) => {
-  switch (e) {
-    case "label":
-      return ".";
-    case "matrix":
-      return ";";
-    case "simple":
-      return ",";
-    default:
-      return "&";
+  get isCancelled() {
+    return !0;
   }
-}, xe = ({ allowReserved: e, explode: t, name: r, style: o, value: s }) => {
-  if (!t) {
-    let a = (e ? s : s.map((l) => encodeURIComponent(l))).join(pt(o));
-    switch (o) {
-      case "label":
-        return `.${a}`;
-      case "matrix":
-        return `;${r}=${a}`;
-      case "simple":
-        return a;
-      default:
-        return `${r}=${a}`;
-    }
-  }
-  let n = ht(o), i = s.map((a) => o === "label" || o === "simple" ? e ? a : encodeURIComponent(a) : J({ allowReserved: e, name: r, value: a })).join(n);
-  return o === "label" || o === "matrix" ? n + i : i;
-}, J = ({ allowReserved: e, name: t, value: r }) => {
-  if (r == null) return "";
-  if (typeof r == "object") throw new Error("Deeply-nested arrays/objects aren’t supported. Provide your own `querySerializer()` to handle these.");
-  return `${t}=${e ? r : encodeURIComponent(r)}`;
-}, Ee = ({ allowReserved: e, explode: t, name: r, style: o, value: s }) => {
-  if (s instanceof Date) return `${r}=${s.toISOString()}`;
-  if (o !== "deepObject" && !t) {
-    let a = [];
-    Object.entries(s).forEach(([q, c]) => {
-      a = [...a, q, e ? c : encodeURIComponent(c)];
+}
+class rt {
+  constructor(e) {
+    this._isResolved = !1, this._isRejected = !1, this._isCancelled = !1, this.cancelHandlers = [], this.promise = new Promise((i, r) => {
+      this._resolve = i, this._reject = r;
+      const o = (a) => {
+        this._isResolved || this._isRejected || this._isCancelled || (this._isResolved = !0, this._resolve && this._resolve(a));
+      }, s = (a) => {
+        this._isResolved || this._isRejected || this._isCancelled || (this._isRejected = !0, this._reject && this._reject(a));
+      }, n = (a) => {
+        this._isResolved || this._isRejected || this._isCancelled || this.cancelHandlers.push(a);
+      };
+      return Object.defineProperty(n, "isResolved", {
+        get: () => this._isResolved
+      }), Object.defineProperty(n, "isRejected", {
+        get: () => this._isRejected
+      }), Object.defineProperty(n, "isCancelled", {
+        get: () => this._isCancelled
+      }), e(o, s, n);
     });
-    let l = a.join(",");
-    switch (o) {
-      case "form":
-        return `${r}=${l}`;
-      case "label":
-        return `.${l}`;
-      case "matrix":
-        return `;${r}=${l}`;
-      default:
-        return l;
+  }
+  get [Symbol.toStringTag]() {
+    return "Cancellable Promise";
+  }
+  then(e, i) {
+    return this.promise.then(e, i);
+  }
+  catch(e) {
+    return this.promise.catch(e);
+  }
+  finally(e) {
+    return this.promise.finally(e);
+  }
+  cancel() {
+    if (!(this._isResolved || this._isRejected || this._isCancelled)) {
+      if (this._isCancelled = !0, this.cancelHandlers.length)
+        try {
+          for (const e of this.cancelHandlers)
+            e();
+        } catch (e) {
+          console.warn("Cancellation threw an error", e);
+          return;
+        }
+      this.cancelHandlers.length = 0, this._reject && this._reject(new it("Request aborted"));
     }
   }
-  let n = dt(o), i = Object.entries(s).map(([a, l]) => J({ allowReserved: e, name: o === "deepObject" ? `${r}[${a}]` : a, value: l })).join(n);
-  return o === "label" || o === "matrix" ? n + i : i;
-}, ft = /\{[^{}]+\}/g, bt = ({ path: e, url: t }) => {
-  let r = t, o = t.match(ft);
-  if (o) for (let s of o) {
-    let n = !1, i = s.substring(1, s.length - 1), a = "simple";
-    i.endsWith("*") && (n = !0, i = i.substring(0, i.length - 1)), i.startsWith(".") ? (i = i.substring(1), a = "label") : i.startsWith(";") && (i = i.substring(1), a = "matrix");
-    let l = e[i];
-    if (l == null) continue;
-    if (Array.isArray(l)) {
-      r = r.replace(s, xe({ explode: n, name: i, style: a, value: l }));
-      continue;
-    }
-    if (typeof l == "object") {
-      r = r.replace(s, Ee({ explode: n, name: i, style: a, value: l }));
-      continue;
-    }
-    if (a === "matrix") {
-      r = r.replace(s, `;${J({ name: i, value: l })}`);
-      continue;
-    }
-    let q = encodeURIComponent(a === "label" ? `.${l}` : l);
-    r = r.replace(s, q);
+  get isCancelled() {
+    return this._isCancelled;
   }
-  return r;
-}, Ue = ({ allowReserved: e, array: t, object: r } = {}) => (o) => {
-  let s = [];
-  if (o && typeof o == "object") for (let n in o) {
-    let i = o[n];
-    if (i != null) {
-      if (Array.isArray(i)) {
-        s = [...s, xe({ allowReserved: e, explode: !0, name: n, style: "form", value: i, ...t })];
-        continue;
-      }
-      if (typeof i == "object") {
-        s = [...s, Ee({ allowReserved: e, explode: !0, name: n, style: "deepObject", value: i, ...r })];
-        continue;
-      }
-      s = [...s, J({ allowReserved: e, name: n, value: i })];
-    }
-  }
-  return s.join("&");
-}, yt = (e) => {
-  var r;
-  if (!e) return "stream";
-  let t = (r = e.split(";")[0]) == null ? void 0 : r.trim();
-  if (t) {
-    if (t.startsWith("application/json") || t.endsWith("+json")) return "json";
-    if (t === "multipart/form-data") return "formData";
-    if (["application/", "audio/", "image/", "video/"].some((o) => t.startsWith(o))) return "blob";
-    if (t.startsWith("text/")) return "text";
-  }
-}, mt = async ({ security: e, ...t }) => {
-  for (let r of e) {
-    let o = await ct(r, t.auth);
-    if (!o) continue;
-    let s = r.name ?? "Authorization";
-    switch (r.in) {
-      case "query":
-        t.query || (t.query = {}), t.query[s] = o;
-        break;
-      case "cookie":
-        t.headers.append("Cookie", `${s}=${o}`);
-        break;
-      case "header":
-      default:
-        t.headers.set(s, o);
-        break;
-    }
-    return;
-  }
-}, ve = (e) => _t({ baseUrl: e.baseUrl, path: e.path, query: e.query, querySerializer: typeof e.querySerializer == "function" ? e.querySerializer : Ue(e.querySerializer), url: e.url }), _t = ({ baseUrl: e, path: t, query: r, querySerializer: o, url: s }) => {
-  let n = s.startsWith("/") ? s : `/${s}`, i = (e ?? "") + n;
-  t && (i = bt({ path: t, url: i }));
-  let a = r ? o(r) : "";
-  return a.startsWith("?") && (a = a.substring(1)), a && (i += `?${a}`), i;
-}, we = (e, t) => {
-  var o;
-  let r = { ...e, ...t };
-  return (o = r.baseUrl) != null && o.endsWith("/") && (r.baseUrl = r.baseUrl.substring(0, r.baseUrl.length - 1)), r.headers = qe(e.headers, t.headers), r;
-}, qe = (...e) => {
-  let t = new Headers();
-  for (let r of e) {
-    if (!r || typeof r != "object") continue;
-    let o = r instanceof Headers ? r.entries() : Object.entries(r);
-    for (let [s, n] of o) if (n === null) t.delete(s);
-    else if (Array.isArray(n)) for (let i of n) t.append(s, i);
-    else n !== void 0 && t.set(s, typeof n == "object" ? JSON.stringify(n) : n);
-  }
-  return t;
-}, Q = class {
+}
+class me {
   constructor() {
-    me(this, "_fns");
     this._fns = [];
-  }
-  clear() {
-    this._fns = [];
-  }
-  exists(e) {
-    return this._fns.indexOf(e) !== -1;
   }
   eject(e) {
-    let t = this._fns.indexOf(e);
-    t !== -1 && (this._fns = [...this._fns.slice(0, t), ...this._fns.slice(t + 1)]);
+    const i = this._fns.indexOf(e);
+    i !== -1 && (this._fns = [...this._fns.slice(0, i), ...this._fns.slice(i + 1)]);
   }
   use(e) {
     this._fns = [...this._fns, e];
   }
-}, kt = () => ({ error: new Q(), request: new Q(), response: new Q() }), vt = Ue({ allowReserved: !1, array: { explode: !0, style: "form" }, object: { explode: !0, style: "deepObject" } }), wt = { "Content-Type": "application/json" }, Ae = (e = {}) => ({ ...ut, headers: wt, parseAs: "auto", querySerializer: vt, ...e }), gt = (e = {}) => {
-  let t = we(Ae(), e), r = () => ({ ...t }), o = (i) => (t = we(t, i), r()), s = kt(), n = async (i) => {
-    let a = { ...t, ...i, fetch: i.fetch ?? t.fetch ?? globalThis.fetch, headers: qe(t.headers, i.headers) };
-    a.security && await mt({ ...a, security: a.security }), a.body && a.bodySerializer && (a.body = a.bodySerializer(a.body)), (a.body === void 0 || a.body === "") && a.headers.delete("Content-Type");
-    let l = ve(a), q = { redirect: "follow", ...a }, c = new Request(l, q);
-    for (let T of s.request._fns) c = await T(c, a);
-    let Ye = a.fetch, m = await Ye(c);
-    for (let T of s.response._fns) m = await T(m, c, a);
-    let K = { request: c, response: m };
-    if (m.ok) {
-      if (m.status === 204 || m.headers.get("Content-Length") === "0") return { data: {}, ...K };
-      let T = (a.parseAs === "auto" ? yt(m.headers.get("Content-Type")) : a.parseAs) ?? "json";
-      if (T === "stream") return { data: m.body, ...K };
-      let I = await m[T]();
-      return T === "json" && (a.responseValidator && await a.responseValidator(I), a.responseTransformer && (I = await a.responseTransformer(I))), { data: I, ...K };
-    }
-    let W = await m.text();
-    try {
-      W = JSON.parse(W);
-    } catch {
-    }
-    let V = W;
-    for (let T of s.error._fns) V = await T(W, m, c, a);
-    if (V = V || {}, a.throwOnError) throw V;
-    return { error: V, ...K };
+}
+const x = {
+  BASE: "",
+  CREDENTIALS: "include",
+  ENCODE_PATH: void 0,
+  HEADERS: void 0,
+  PASSWORD: void 0,
+  TOKEN: void 0,
+  USERNAME: void 0,
+  VERSION: "Latest",
+  WITH_CREDENTIALS: !1,
+  interceptors: {
+    request: new me(),
+    response: new me()
+  }
+}, M = (t) => typeof t == "string", F = (t) => M(t) && t !== "", ne = (t) => t instanceof Blob, Te = (t) => t instanceof FormData, ot = (t) => {
+  try {
+    return btoa(t);
+  } catch {
+    return Buffer.from(t).toString("base64");
+  }
+}, nt = (t) => {
+  const e = [], i = (o, s) => {
+    e.push(`${encodeURIComponent(o)}=${encodeURIComponent(String(s))}`);
+  }, r = (o, s) => {
+    s != null && (s instanceof Date ? i(o, s.toISOString()) : Array.isArray(s) ? s.forEach((n) => r(o, n)) : typeof s == "object" ? Object.entries(s).forEach(([n, a]) => r(`${o}[${n}]`, a)) : i(o, s));
   };
-  return { buildUrl: ve, connect: (i) => n({ ...i, method: "CONNECT" }), delete: (i) => n({ ...i, method: "DELETE" }), get: (i) => n({ ...i, method: "GET" }), getConfig: r, head: (i) => n({ ...i, method: "HEAD" }), interceptors: s, options: (i) => n({ ...i, method: "OPTIONS" }), patch: (i) => n({ ...i, method: "PATCH" }), post: (i) => n({ ...i, method: "POST" }), put: (i) => n({ ...i, method: "PUT" }), request: n, setConfig: o, trace: (i) => n({ ...i, method: "TRACE" }) };
-};
-const M = gt(Ae({
-  baseUrl: "http://localhost:26292",
-  throwOnError: !0
-}));
-class Y {
-  static previewGridBlock(t) {
-    return ((t == null ? void 0 : t.client) ?? M).post({
-      security: [
-        {
-          scheme: "bearer",
-          type: "http"
-        }
-      ],
+  return Object.entries(t).forEach(([o, s]) => r(o, s)), e.length ? `?${e.join("&")}` : "";
+}, st = (t, e) => {
+  const i = encodeURI, r = e.url.replace("{api-version}", t.VERSION).replace(/{(.*?)}/g, (s, n) => {
+    var a;
+    return (a = e.path) != null && a.hasOwnProperty(n) ? i(String(e.path[n])) : s;
+  }), o = t.BASE + r;
+  return e.query ? o + nt(e.query) : o;
+}, at = (t) => {
+  if (t.formData) {
+    const e = new FormData(), i = (r, o) => {
+      M(o) || ne(o) ? e.append(r, o) : e.append(r, JSON.stringify(o));
+    };
+    return Object.entries(t.formData).filter(([, r]) => r != null).forEach(([r, o]) => {
+      Array.isArray(o) ? o.forEach((s) => i(r, s)) : i(r, o);
+    }), e;
+  }
+}, V = async (t, e) => typeof e == "function" ? e(t) : e, ct = async (t, e) => {
+  const [i, r, o, s] = await Promise.all([
+    // @ts-ignore
+    V(e, t.TOKEN),
+    // @ts-ignore
+    V(e, t.USERNAME),
+    // @ts-ignore
+    V(e, t.PASSWORD),
+    // @ts-ignore
+    V(e, t.HEADERS)
+  ]), n = Object.entries({
+    Accept: "application/json",
+    ...s,
+    ...e.headers
+  }).filter(([, a]) => a != null).reduce((a, [c, l]) => ({
+    ...a,
+    [c]: String(l)
+  }), {});
+  if (F(i) && (n.Authorization = `Bearer ${i}`), F(r) && F(o)) {
+    const a = ot(`${r}:${o}`);
+    n.Authorization = `Basic ${a}`;
+  }
+  return e.body !== void 0 && (e.mediaType ? n["Content-Type"] = e.mediaType : ne(e.body) ? n["Content-Type"] = e.body.type || "application/octet-stream" : M(e.body) ? n["Content-Type"] = "text/plain" : Te(e.body) || (n["Content-Type"] = "application/json")), new Headers(n);
+}, lt = (t) => {
+  var e, i;
+  if (t.body !== void 0)
+    return (e = t.mediaType) != null && e.includes("application/json") || (i = t.mediaType) != null && i.includes("+json") ? JSON.stringify(t.body) : M(t.body) || ne(t.body) || Te(t.body) ? t.body : JSON.stringify(t.body);
+}, ut = async (t, e, i, r, o, s, n) => {
+  const a = new AbortController();
+  let c = {
+    headers: s,
+    body: r ?? o,
+    method: e.method,
+    signal: a.signal
+  };
+  t.WITH_CREDENTIALS && (c.credentials = t.CREDENTIALS);
+  for (const l of t.interceptors.request._fns)
+    c = await l(c);
+  return n(() => a.abort()), await fetch(i, c);
+}, ht = (t, e) => {
+  if (e) {
+    const i = t.headers.get(e);
+    if (M(i))
+      return i;
+  }
+}, dt = async (t) => {
+  if (t.status !== 204)
+    try {
+      const e = t.headers.get("Content-Type");
+      if (e) {
+        const i = ["application/octet-stream", "application/pdf", "application/zip", "audio/", "image/", "video/"];
+        if (e.includes("application/json") || e.includes("+json"))
+          return await t.json();
+        if (i.some((r) => e.includes(r)))
+          return await t.blob();
+        if (e.includes("multipart/form-data"))
+          return await t.formData();
+        if (e.includes("text/"))
+          return await t.text();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+}, pt = (t, e) => {
+  const r = {
+    400: "Bad Request",
+    401: "Unauthorized",
+    402: "Payment Required",
+    403: "Forbidden",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    406: "Not Acceptable",
+    407: "Proxy Authentication Required",
+    408: "Request Timeout",
+    409: "Conflict",
+    410: "Gone",
+    411: "Length Required",
+    412: "Precondition Failed",
+    413: "Payload Too Large",
+    414: "URI Too Long",
+    415: "Unsupported Media Type",
+    416: "Range Not Satisfiable",
+    417: "Expectation Failed",
+    418: "Im a teapot",
+    421: "Misdirected Request",
+    422: "Unprocessable Content",
+    423: "Locked",
+    424: "Failed Dependency",
+    425: "Too Early",
+    426: "Upgrade Required",
+    428: "Precondition Required",
+    429: "Too Many Requests",
+    431: "Request Header Fields Too Large",
+    451: "Unavailable For Legal Reasons",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service Unavailable",
+    504: "Gateway Timeout",
+    505: "HTTP Version Not Supported",
+    506: "Variant Also Negotiates",
+    507: "Insufficient Storage",
+    508: "Loop Detected",
+    510: "Not Extended",
+    511: "Network Authentication Required",
+    ...t.errors
+  }[e.status];
+  if (r)
+    throw new _e(t, e, r);
+  if (!e.ok) {
+    const o = e.status ?? "unknown", s = e.statusText ?? "unknown", n = (() => {
+      try {
+        return JSON.stringify(e.body, null, 2);
+      } catch {
+        return;
+      }
+    })();
+    throw new _e(
+      t,
+      e,
+      `Generic Error: status: ${o}; status text: ${s}; body: ${n}`
+    );
+  }
+}, I = (t, e) => new rt(async (i, r, o) => {
+  try {
+    const s = st(t, e), n = at(e), a = lt(e), c = await ct(t, e);
+    if (!o.isCancelled) {
+      let l = await ut(t, e, s, a, n, c, o);
+      for (const We of t.interceptors.response._fns)
+        l = await We(l);
+      const he = await dt(l), Ge = ht(l, e.responseHeader);
+      let de = he;
+      e.responseTransformer && l.ok && (de = await e.responseTransformer(he));
+      const pe = {
+        url: s,
+        ok: l.ok,
+        status: l.status,
+        statusText: l.statusText,
+        body: Ge ?? de
+      };
+      pt(e, pe), i(pe.body);
+    }
+  } catch (s) {
+    r(s);
+  }
+});
+class H {
+  /**
+   * @param data The data for the request.
+   * @param data.nodeKey
+   * @param data.blockEditorAlias
+   * @param data.contentElementAlias
+   * @param data.culture
+   * @param data.documentTypeUnique
+   * @param data.contentUdi
+   * @param data.settingsUdi
+   * @param data.blockIndex
+   * @param data.requestBody
+   * @returns string OK
+   * @throws ApiError
+   */
+  static previewGridBlock(e = {}) {
+    return I(x, {
+      method: "POST",
       url: "/umbraco/management/api/v1/block-preview/preview/grid",
-      ...t,
-      headers: {
-        "Content-Type": "application/json",
-        ...t == null ? void 0 : t.headers
+      query: {
+        nodeKey: e.nodeKey,
+        blockEditorAlias: e.blockEditorAlias,
+        contentElementAlias: e.contentElementAlias,
+        culture: e.culture,
+        documentTypeUnique: e.documentTypeUnique,
+        contentUdi: e.contentUdi,
+        settingsUdi: e.settingsUdi,
+        blockIndex: e.blockIndex
+      },
+      body: e.requestBody,
+      mediaType: "application/json",
+      errors: {
+        401: "The resource is protected and requires an authentication token",
+        403: "The authenticated user does not have access to this resource"
       }
     });
   }
-  static previewListBlock(t) {
-    return ((t == null ? void 0 : t.client) ?? M).post({
-      security: [
-        {
-          scheme: "bearer",
-          type: "http"
-        }
-      ],
+  /**
+   * @param data The data for the request.
+   * @param data.nodeKey
+   * @param data.blockEditorAlias
+   * @param data.contentElementAlias
+   * @param data.culture
+   * @param data.documentTypeUnique
+   * @param data.contentUdi
+   * @param data.settingsUdi
+   * @param data.blockIndex
+   * @param data.requestBody
+   * @returns string OK
+   * @throws ApiError
+   */
+  static previewListBlock(e = {}) {
+    return I(x, {
+      method: "POST",
       url: "/umbraco/management/api/v1/block-preview/preview/list",
-      ...t,
-      headers: {
-        "Content-Type": "application/json",
-        ...t == null ? void 0 : t.headers
+      query: {
+        nodeKey: e.nodeKey,
+        blockEditorAlias: e.blockEditorAlias,
+        contentElementAlias: e.contentElementAlias,
+        culture: e.culture,
+        documentTypeUnique: e.documentTypeUnique,
+        contentUdi: e.contentUdi,
+        settingsUdi: e.settingsUdi,
+        blockIndex: e.blockIndex
+      },
+      body: e.requestBody,
+      mediaType: "application/json",
+      errors: {
+        401: "The resource is protected and requires an authentication token",
+        403: "The authenticated user does not have access to this resource"
       }
     });
   }
-  static previewRichTextMarkup(t) {
-    return ((t == null ? void 0 : t.client) ?? M).post({
-      security: [
-        {
-          scheme: "bearer",
-          type: "http"
-        }
-      ],
+  /**
+   * @param data The data for the request.
+   * @param data.nodeKey
+   * @param data.blockEditorAlias
+   * @param data.contentElementAlias
+   * @param data.culture
+   * @param data.documentTypeUnique
+   * @param data.requestBody
+   * @returns string OK
+   * @throws ApiError
+   */
+  static previewRichTextMarkup(e = {}) {
+    return I(x, {
+      method: "POST",
       url: "/umbraco/management/api/v1/block-preview/preview/rte",
-      ...t,
-      headers: {
-        "Content-Type": "application/json",
-        ...t == null ? void 0 : t.headers
+      query: {
+        nodeKey: e.nodeKey,
+        blockEditorAlias: e.blockEditorAlias,
+        contentElementAlias: e.contentElementAlias,
+        culture: e.culture,
+        documentTypeUnique: e.documentTypeUnique
+      },
+      body: e.requestBody,
+      mediaType: "application/json",
+      errors: {
+        401: "The resource is protected and requires an authentication token",
+        403: "The authenticated user does not have access to this resource"
       }
     });
   }
-  static getSettings(t) {
-    return ((t == null ? void 0 : t.client) ?? M).get({
+  /**
+   * @returns unknown OK
+   * @throws ApiError
+   */
+  static getSettings() {
+    return I(x, {
+      method: "GET",
       url: "/umbraco/management/api/v1/block-preview/settings",
-      ...t
+      errors: {
+        403: "The authenticated user does not have access to this resource"
+      }
     });
   }
 }
-var j;
-class Ct {
-  constructor(t) {
-    P(this, j);
-    $(this, j, t);
+var L;
+class ft {
+  constructor(e) {
+    R(this, L);
+    q(this, L, e);
   }
   async getSettings() {
-    return await H(p(this, j), Y.getSettings());
+    return await W(d(this, L), H.getSettings());
   }
 }
-j = new WeakMap();
+L = new WeakMap();
 var N;
-class Oe extends ge {
-  constructor(r) {
-    super(r);
-    P(this, N);
-    $(this, N, new Ct(r));
+class ge extends ke {
+  constructor(i) {
+    super(i);
+    R(this, N);
+    q(this, N, new ft(i));
   }
   async getSettings() {
-    const r = await p(this, N).getSettings();
-    if (r && (r != null && r.data))
-      return r.data;
+    const i = await d(this, N).getSettings();
+    if (i && (i != null && i.data))
+      return i.data;
   }
 }
 N = new WeakMap();
-const he = new st("BlockPreviewContext");
-var Tt = Object.defineProperty, xt = Object.getOwnPropertyDescriptor, Pe = (e) => {
-  throw TypeError(e);
-}, U = (e, t, r, o) => {
-  for (var s = o > 1 ? void 0 : o ? xt(t, r) : t, n = e.length - 1, i; n >= 0; n--)
-    (i = e[n]) && (s = (o ? i(t, r, s) : i(s)) || s);
-  return o && s && Tt(t, r, s), s;
-}, pe = (e, t, r) => t.has(e) || Pe("Cannot " + r), v = (e, t, r) => (pe(e, t, "read from private field"), t.get(e)), Z = (e, t, r) => t.has(e) ? Pe("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), $e = (e, t, r, o) => (pe(e, t, "write to private field"), t.set(e, r), r), x = (e, t, r) => (pe(e, t, "access private method"), r), d, z, _, De, Be, Se, Re, te, Le, Ve, Me;
-const Et = "block-grid-preview";
-let y = class extends ce {
+const se = new Ye("BlockPreviewContext");
+var yt = Object.defineProperty, bt = Object.getOwnPropertyDescriptor, Ce = (t) => {
+  throw TypeError(t);
+}, E = (t, e, i, r) => {
+  for (var o = r > 1 ? void 0 : r ? bt(e, i) : e, s = t.length - 1, n; s >= 0; s--)
+    (n = t[s]) && (o = (r ? n(e, i, o) : n(o)) || o);
+  return r && o && yt(e, i, o), o;
+}, ae = (t, e, i) => e.has(t) || Ce("Cannot " + i), k = (t, e, i) => (ae(t, e, "read from private field"), e.get(t)), X = (t, e, i) => e.has(t) ? Ce("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), Ee = (t, e, i, r) => (ae(t, e, "write to private field"), e.set(t, i), i), g = (t, e, i) => (ae(t, e, "access private method"), i), p, K, _, xe, Ae, Ue, Re, z, qe, Pe, Se;
+const _t = "block-grid-preview";
+let b = class extends re {
   constructor() {
-    super(), Z(this, _), Z(this, d), Z(this, z), this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._blockContext = {
+    super(), X(this, _), X(this, p), X(this, K), this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._blockContext = {
       unique: "",
       documentTypeUnique: "",
       contentUdi: "",
@@ -341,154 +448,160 @@ let y = class extends ce {
       expose: [],
       contentData: [],
       settingsData: []
-    }, this.consumeContext(he, (e) => {
-      $e(this, d, e), x(this, _, De).call(this);
+    }, this.consumeContext(se, (t) => {
+      Ee(this, p, t), g(this, _, xe).call(this);
     });
   }
-  set blockGridValue(e) {
-    const t = e ? { ...e } : {};
-    t.layout ?? (t.layout = {}), t.contentData ?? (t.contentData = []), t.settingsData ?? (t.settingsData = []), t.expose ?? (t.expose = []), this._blockGridValue = t;
+  set blockGridValue(t) {
+    const e = t ? { ...t } : {};
+    e.layout ?? (e.layout = {}), e.contentData ?? (e.contentData = []), e.settingsData ?? (e.settingsData = []), e.expose ?? (e.expose = []), this._blockGridValue = e;
   }
   get blockGridValue() {
     return this._blockGridValue;
   }
-  async updated(e) {
-    super.updated(e), e.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
-      x(this, _, Ve).call(this);
+  async updated(t) {
+    super.updated(t), t.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
+      g(this, _, Pe).call(this);
     }, 500));
   }
+  _handleClick(t) {
+    var s;
+    let e = !0;
+    const i = t.composedPath(), r = [
+      "UUI-ACTION-BAR",
+      "UMB-BLOCK-SCALE-HANDLER"
+    ];
+    if (i.filter((n) => n instanceof Element && r.includes(n.tagName)).length > 0) {
+      const n = i.find((a) => a instanceof Element && a.tagName === "UUI-BUTTON");
+      n != null && n instanceof Qe && (s = n.href) != null && s.includes("block/edit") && (e = !1), e && (t.preventDefault(), t.stopPropagation());
+    }
+  }
   render() {
-    return this._isLoading ? S`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>` : this._error ? S`
+    return this._isLoading ? D`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>` : this._error ? D`
                 <div class="preview-alert preview-alert-error" role="alert">
                     ${this._error}
                 </div>
-            ` : this._htmlMarkup ? S`
+            ` : this._htmlMarkup ? D`
                 ${this._styleElement}
-                <a 
-                    href=${ae(this._blockContext.workspaceEditContentPath)} 
+                <a
+                    href=${te(this._blockContext.workspaceEditContentPath)} 
+                    @click=${this._handleClick}
                     aria-label="Edit block"
                     role="button"
                 >
-                    ${le(this._htmlMarkup)}
+                    ${ie(this._htmlMarkup)}
                 </a>
             ` : null;
   }
 };
-d = /* @__PURE__ */ new WeakMap();
-z = /* @__PURE__ */ new WeakMap();
+p = /* @__PURE__ */ new WeakMap();
+K = /* @__PURE__ */ new WeakMap();
 _ = /* @__PURE__ */ new WeakSet();
-De = function() {
-  x(this, _, Be).call(this), x(this, _, Se).call(this), x(this, _, Re).call(this);
+xe = function() {
+  g(this, _, Ae).call(this), g(this, _, Ue).call(this), g(this, _, Re).call(this);
 };
-Be = function() {
-  var e;
-  this.observe((e = v(this, d)) == null ? void 0 : e.settings, (t) => {
-    var r;
-    (r = t == null ? void 0 : t.blockGrid) != null && r.stylesheet && (this._styleElement = document.createElement("link"), this._styleElement.rel = "stylesheet", this._styleElement.href = t.blockGrid.stylesheet);
+Ae = function() {
+  var t;
+  this.observe((t = k(this, p)) == null ? void 0 : t.settings, (e) => {
+    var i;
+    (i = e == null ? void 0 : e.blockGrid) != null && i.stylesheet && (this._styleElement = document.createElement("link"), this._styleElement.rel = "stylesheet", this._styleElement.href = e.blockGrid.stylesheet);
   });
 };
-Se = function() {
-  this.consumeContext(ue, (e) => {
-    e && (this._blockContext.culture = e.getVariantId().culture ?? "");
+Ue = function() {
+  this.consumeContext(oe, (t) => {
+    this._blockContext.culture = t.getVariantId().culture ?? "";
   });
 };
 Re = async function() {
-  this.getContext(Te).then((e) => {
-    e && ($e(this, z, e), this.observe(
-      A([e.unique, e.contentTypeUnique]),
-      async ([t, r]) => {
-        var o, s;
-        this._blockContext.unique = (t == null ? void 0 : t.toString()) ?? "", (o = v(this, d)) == null || o.setUnique(this._blockContext.unique), this._blockContext.documentTypeUnique = r ?? "", (s = v(this, d)) == null || s.setDocumentTypeUnique(this._blockContext.documentTypeUnique), x(this, _, te).call(this);
+  this.getContext(we).then((t) => {
+    Ee(this, K, t), this.observe(
+      A([t.unique, t.contentTypeUnique]),
+      async ([e, i]) => {
+        var r, o;
+        this._blockContext.unique = (e == null ? void 0 : e.toString()) ?? "", (r = k(this, p)) == null || r.setUnique(this._blockContext.unique), this._blockContext.documentTypeUnique = i ?? "", (o = k(this, p)) == null || o.setDocumentTypeUnique(this._blockContext.documentTypeUnique), g(this, _, z).call(this);
       }
-    ));
-  }), v(this, z) == null && v(this, d) != null && this._blockContext.unique == "" && this.consumeContext(Ce, (e) => {
-    e && this.observe(e.content.structure.contentTypeUniques, (t) => {
-      var r;
-      this._blockContext.unique = ((r = v(this, d)) == null ? void 0 : r.getUnique()) ?? "", this._blockContext.documentTypeUnique = t[0] ?? "", x(this, _, te).call(this);
+    );
+  }), k(this, K) == null && k(this, p) != null && this._blockContext.unique == "" && this.consumeContext(ve, (t) => {
+    this.observe(t.content.structure.contentTypeUniques, (e) => {
+      var i;
+      this._blockContext.unique = ((i = k(this, p)) == null ? void 0 : i.getUnique()) ?? "", this._blockContext.documentTypeUnique = e[0] ?? "", g(this, _, z).call(this);
     });
   });
 };
-te = async function() {
-  this.consumeContext(tt, async (e) => {
-    e && this.observe(
+z = async function() {
+  this.consumeContext(Fe, async (t) => {
+    this.observe(
       A([
-        e.contentKey,
-        e.settingsKey,
-        e.workspaceEditContentPath,
-        e.contentElementTypeAlias,
-        e.contentElementTypeKey
+        t.contentKey,
+        t.settingsKey,
+        t.workspaceEditContentPath,
+        t.contentElementTypeAlias,
+        t.contentElementTypeKey
       ]),
       async ([
-        t,
+        e,
+        i,
         r,
         o,
-        s,
-        n
+        s
       ]) => {
-        this._blockContext.contentUdi = t ?? "", this._blockContext.settingsUdi = r ?? "", this._blockContext.workspaceEditContentPath = o ?? "", this._blockContext.contentElementTypeAlias = s ?? "", this._blockContext.contentElementTypeKey = n ?? "", await x(this, _, Le).call(this);
+        this._blockContext.contentUdi = e ?? "", this._blockContext.settingsUdi = i ?? "", this._blockContext.workspaceEditContentPath = r ?? "", this._blockContext.contentElementTypeAlias = o ?? "", this._blockContext.contentElementTypeKey = s ?? "", await g(this, _, qe).call(this);
       }
     );
   });
 };
-Le = async function() {
-  this.consumeContext(rt, (e) => {
-    e && this.observe(
+qe = async function() {
+  this.consumeContext(Xe, (t) => {
+    this.observe(
       A([
-        e.contents,
-        e.settings,
-        e.layouts,
-        e.exposes,
-        e.propertyAlias
+        t.contents,
+        t.settings,
+        t.layouts,
+        t.exposes,
+        t.propertyAlias
       ]),
-      async ([t, r, o, s, n]) => {
-        this._blockContext.blockEditorAlias = n ?? "", this.blockGridValue = {
-          contentData: (t == null ? void 0 : t.filter((i) => i.key == this._blockContext.contentUdi)) ?? [],
-          settingsData: (r == null ? void 0 : r.filter((i) => i.key == this._blockContext.settingsUdi)) ?? [],
-          expose: (s == null ? void 0 : s.filter((i) => i.contentKey == this._blockContext.contentUdi)) ?? [],
+      async ([e, i, r, o, s]) => {
+        this._blockContext.blockEditorAlias = s ?? "", this.blockGridValue = {
+          contentData: (e == null ? void 0 : e.filter((n) => n.key == this._blockContext.contentUdi)) ?? [],
+          settingsData: (i == null ? void 0 : i.filter((n) => n.key == this._blockContext.settingsUdi)) ?? [],
+          expose: (o == null ? void 0 : o.filter((n) => n.contentKey == this._blockContext.contentUdi)) ?? [],
           layout: {
-            "Umbraco.BlockGrid": (o == null ? void 0 : o.filter((i) => i.contentKey == this._blockContext.contentUdi)) ?? []
+            "Umbraco.BlockGrid": (r == null ? void 0 : r.filter((n) => n.contentKey == this._blockContext.contentUdi)) ?? []
           }
-        }, this._blockContext.blockIndex = t.indexOf(this.blockGridValue.contentData[0]);
+        }, this._blockContext.blockIndex = e.indexOf(this.blockGridValue.contentData[0]);
       }
     );
   });
 };
-Ve = async function() {
-  const e = this._blockContext;
-  if (v(this, d) != null && e.unique == "" && (e.unique = v(this, d).getUnique()), v(this, d) != null && e.documentTypeUnique == "" && (e.documentTypeUnique = v(this, d).getDocumentTypeUnique()), !x(this, _, Me).call(this, e)) {
+Pe = async function() {
+  const t = this._blockContext;
+  if (k(this, p) != null && t.unique == "" && (t.unique = k(this, p).getUnique()), k(this, p) != null && t.documentTypeUnique == "" && (t.documentTypeUnique = k(this, p).getDocumentTypeUnique()), !g(this, _, Se).call(this, t)) {
     this._error = "Insufficient data for block preview", this._isLoading = !1;
     return;
   }
   this._isLoading = !0, this._error = null;
   try {
-    const { data: r, error: o } = await H(this, Y.previewGridBlock({
-      body: JSON.stringify(this.blockGridValue),
-      query: {
-        blockEditorAlias: e.blockEditorAlias,
-        nodeKey: e.unique,
-        contentElementAlias: e.contentElementTypeAlias,
-        documentTypeUnique: e.documentTypeUnique,
-        contentUdi: e.contentUdi,
-        settingsUdi: e.settingsUdi,
-        culture: e.culture,
-        blockIndex: e.blockIndex
-      }
-    }));
-    if (r)
-      this._htmlMarkup = r ?? "", this._isLoading = !1;
-    else if (oe.isUmbApiError(o)) {
-      debugger;
-      this._error = o.message, this._isLoading = !1;
-    }
-  } catch (r) {
-    this._error = "Failed to render block preview", this._isLoading = !1, console.error("Block preview error:", r);
+    const i = {
+      blockEditorAlias: t.blockEditorAlias,
+      nodeKey: t.unique,
+      contentElementAlias: t.contentElementTypeAlias,
+      documentTypeUnique: t.documentTypeUnique,
+      contentUdi: t.contentUdi,
+      settingsUdi: t.settingsUdi,
+      culture: t.culture,
+      requestBody: JSON.stringify(this.blockGridValue),
+      blockIndex: t.blockIndex
+    }, { data: r } = await W(this, H.previewGridBlock(i));
+    this._htmlMarkup = r ?? "", this._isLoading = !1;
+  } catch (i) {
+    this._error = "Failed to render block preview", this._isLoading = !1, console.error("Block preview error:", i);
   }
 };
-Me = function(e) {
-  return e.unique != "" && e.blockEditorAlias != "" && e.contentUdi != "" && e.contentElementTypeAlias != "";
+Se = function(t) {
+  return t.unique != "" && t.blockEditorAlias != "" && t.contentUdi != "" && t.contentElementTypeAlias != "";
 };
-y.styles = [
-  se`
+b.styles = [
+  Z`
             a {
               display: block;
               color: inherit;
@@ -541,44 +654,44 @@ y.styles = [
             }
         `
 ];
-U([
+E([
   u({ attribute: !1 })
-], y.prototype, "content", 2);
-U([
+], b.prototype, "content", 2);
+E([
   u({ attribute: !1 })
-], y.prototype, "settingsData", 2);
-U([
+], b.prototype, "settingsData", 2);
+E([
   u({ attribute: !1 })
-], y.prototype, "contentKey", 2);
-U([
+], b.prototype, "contentKey", 2);
+E([
   u({ attribute: !1 })
-], y.prototype, "config", 2);
-U([
-  E()
-], y.prototype, "_htmlMarkup", 2);
-U([
-  E()
-], y.prototype, "_isLoading", 2);
-U([
-  E()
-], y.prototype, "_error", 2);
-U([
+], b.prototype, "config", 2);
+E([
+  C()
+], b.prototype, "_htmlMarkup", 2);
+E([
+  C()
+], b.prototype, "_isLoading", 2);
+E([
+  C()
+], b.prototype, "_error", 2);
+E([
   u({ attribute: !1 })
-], y.prototype, "blockGridValue", 1);
-y = U([
-  ne(Et)
-], y);
-var Ut = Object.defineProperty, qt = Object.getOwnPropertyDescriptor, je = (e) => {
-  throw TypeError(e);
-}, C = (e, t, r, o) => {
-  for (var s = o > 1 ? void 0 : o ? qt(t, r) : t, n = e.length - 1, i; n >= 0; n--)
-    (i = e[n]) && (s = (o ? i(t, r, s) : i(s)) || s);
-  return o && s && Ut(t, r, s), s;
-}, de = (e, t, r) => t.has(e) || je("Cannot " + r), w = (e, t, r) => (de(e, t, "read from private field"), t.get(e)), ee = (e, t, r) => t.has(e) ? je("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), Ne = (e, t, r, o) => (de(e, t, "write to private field"), t.set(e, r), r), g = (e, t, r) => (de(e, t, "access private method"), r), f, X, b, Ge, Ke, We, Ie, re, ze, fe, Xe;
-const At = "block-list-preview";
-let h = class extends ce {
+], b.prototype, "blockGridValue", 1);
+b = E([
+  ee(_t)
+], b);
+var mt = Object.defineProperty, kt = Object.getOwnPropertyDescriptor, De = (t) => {
+  throw TypeError(t);
+}, T = (t, e, i, r) => {
+  for (var o = r > 1 ? void 0 : r ? kt(e, i) : e, s = t.length - 1, n; s >= 0; s--)
+    (n = t[s]) && (o = (r ? n(e, i, o) : n(o)) || o);
+  return r && o && mt(e, i, o), o;
+}, ce = (t, e, i) => e.has(t) || De("Cannot " + i), v = (t, e, i) => (ce(t, e, "read from private field"), e.get(t)), J = (t, e, i) => e.has(t) ? De("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), Be = (t, e, i, r) => (ce(t, e, "write to private field"), e.set(t, i), i), w = (t, e, i) => (ce(t, e, "access private method"), i), f, j, y, Oe, Le, Ne, $e, Y, Me, le, Ve;
+const vt = "block-list-preview";
+let h = class extends re {
   constructor() {
-    super(), ee(this, b), ee(this, f), ee(this, X), this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._blockContext = {
+    super(), J(this, y), J(this, f), J(this, j), this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._blockContext = {
       unique: "",
       documentTypeUnique: "",
       contentUdi: "",
@@ -594,149 +707,147 @@ let h = class extends ce {
       expose: [],
       contentData: [],
       settingsData: []
-    }, this.consumeContext(he, (e) => {
-      Ne(this, f, e), g(this, b, Ge).call(this);
+    }, this.consumeContext(se, (t) => {
+      Be(this, f, t), w(this, y, Oe).call(this);
     });
   }
-  set blockListValue(e) {
-    const t = e ? { ...e } : {};
-    t.layout ?? (t.layout = {}), t.contentData ?? (t.contentData = []), t.settingsData ?? (t.settingsData = []), t.expose ?? (t.expose = []), this._blockListValue = t;
+  set blockListValue(t) {
+    const e = t ? { ...t } : {};
+    e.layout ?? (e.layout = {}), e.contentData ?? (e.contentData = []), e.settingsData ?? (e.settingsData = []), e.expose ?? (e.expose = []), this._blockListValue = e;
   }
   get blockListValue() {
     return this._blockListValue;
   }
-  async updated(e) {
-    super.updated(e), e.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
-      g(this, b, fe).call(this);
+  async updated(t) {
+    super.updated(t), t.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
+      w(this, y, le).call(this);
     }, 500));
   }
   render() {
-    return this._isLoading ? S`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>` : this._error ? S`
+    return this._isLoading ? D`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>` : this._error ? D`
                 <div class="preview-alert preview-alert-error" role="alert">
                     ${this._error}
                 </div>
-            ` : this._htmlMarkup ? S`
+            ` : this._htmlMarkup ? D`
                 ${this._styleElement}
                 <a 
-                    href=${ae(this._blockContext.workspaceEditContentPath)} 
+                    href=${te(this._blockContext.workspaceEditContentPath)} 
                     aria-label="Edit block"
                     role="button"
                 >
-                    ${le(this._htmlMarkup)}
+                    ${ie(this._htmlMarkup)}
                 </a>
             ` : null;
   }
 };
 f = /* @__PURE__ */ new WeakMap();
-X = /* @__PURE__ */ new WeakMap();
-b = /* @__PURE__ */ new WeakSet();
-Ge = function() {
-  g(this, b, Ke).call(this), g(this, b, We).call(this), g(this, b, Ie).call(this);
+j = /* @__PURE__ */ new WeakMap();
+y = /* @__PURE__ */ new WeakSet();
+Oe = function() {
+  w(this, y, Le).call(this), w(this, y, Ne).call(this), w(this, y, $e).call(this);
 };
-Ke = function() {
-  var e;
-  this.observe((e = w(this, f)) == null ? void 0 : e.settings, (t) => {
-    var r;
-    (r = t == null ? void 0 : t.blockList) != null && r.stylesheet && (this._styleElement = document.createElement("link"), this._styleElement.rel = "stylesheet", this._styleElement.href = t.blockList.stylesheet);
+Le = function() {
+  var t;
+  this.observe((t = v(this, f)) == null ? void 0 : t.settings, (e) => {
+    var i;
+    (i = e == null ? void 0 : e.blockList) != null && i.stylesheet && (this._styleElement = document.createElement("link"), this._styleElement.rel = "stylesheet", this._styleElement.href = e.blockList.stylesheet);
   });
 };
-We = function() {
-  this.consumeContext(ue, async (e) => {
-    e && (this._blockContext.culture = e.getVariantId().culture ?? "");
+Ne = function() {
+  this.consumeContext(oe, async (t) => {
+    this._blockContext.culture = t.getVariantId().culture ?? "";
   });
 };
-Ie = function() {
-  this.getContext(Te).then((e) => {
-    e && (Ne(this, X, e), this.observe(
-      A([e.unique, e.contentTypeUnique]),
-      async ([t, r]) => {
-        var o, s;
-        this._blockContext.unique = (t == null ? void 0 : t.toString()) ?? "", (o = w(this, f)) == null || o.setUnique(this._blockContext.unique), this._blockContext.documentTypeUnique = r ?? "", (s = w(this, f)) == null || s.setDocumentTypeUnique(this._blockContext.documentTypeUnique), g(this, b, re).call(this);
+$e = function() {
+  this.getContext(we).then((t) => {
+    Be(this, j, t), this.observe(
+      A([t.unique, t.contentTypeUnique]),
+      async ([e, i]) => {
+        var r, o;
+        this._blockContext.unique = (e == null ? void 0 : e.toString()) ?? "", (r = v(this, f)) == null || r.setUnique(this._blockContext.unique), this._blockContext.documentTypeUnique = i ?? "", (o = v(this, f)) == null || o.setDocumentTypeUnique(this._blockContext.documentTypeUnique), w(this, y, Y).call(this);
       }
-    ));
-  }), w(this, X) == null && w(this, f) != null && this._blockContext.unique == "" && this.consumeContext(Ce, (e) => {
-    e && this.observe(e.content.structure.contentTypeUniques, (t) => {
-      var r;
-      this._blockContext.unique = ((r = w(this, f)) == null ? void 0 : r.getUnique()) ?? "", this._blockContext.documentTypeUnique = t[0] ?? "", g(this, b, re).call(this);
+    );
+  }), v(this, j) == null && v(this, f) != null && this._blockContext.unique == "" && this.consumeContext(ve, (t) => {
+    this.observe(t.content.structure.contentTypeUniques, (e) => {
+      var i;
+      this._blockContext.unique = ((i = v(this, f)) == null ? void 0 : i.getUnique()) ?? "", this._blockContext.documentTypeUnique = e[0] ?? "", w(this, y, Y).call(this);
     });
   });
 };
-re = function() {
-  this.consumeContext(nt, (e) => {
-    e && this.observe(
+Y = function() {
+  this.consumeContext(Ze, (t) => {
+    this.observe(
       A([
-        e.contentKey,
-        e.settingsKey,
-        e.workspaceEditContentPath,
-        e.contentElementTypeAlias,
-        e.contentElementTypeKey
+        t.contentKey,
+        t.settingsKey,
+        t.workspaceEditContentPath,
+        t.contentElementTypeAlias,
+        t.contentElementTypeKey
       ]),
       async ([
-        t,
+        e,
+        i,
         r,
         o,
-        s,
-        n
+        s
       ]) => {
-        this._blockContext.contentUdi = t ?? "", this._blockContext.settingsUdi = r ?? "", this._blockContext.workspaceEditContentPath = o ?? "", this._blockContext.contentElementTypeAlias = s ?? "", this._blockContext.contentElementTypeKey = n ?? "", await g(this, b, ze).call(this);
+        this._blockContext.contentUdi = e ?? "", this._blockContext.settingsUdi = i ?? "", this._blockContext.workspaceEditContentPath = r ?? "", this._blockContext.contentElementTypeAlias = o ?? "", this._blockContext.contentElementTypeKey = s ?? "", await w(this, y, Me).call(this);
       }
     );
   });
 };
-ze = function() {
-  this.consumeContext(at, (e) => {
-    e && this.observe(
+Me = function() {
+  this.consumeContext(et, (t) => {
+    this.observe(
       A([
-        e.contents,
-        e.settings,
-        e.layouts,
-        e.exposes,
-        e.propertyAlias
+        t.contents,
+        t.settings,
+        t.layouts,
+        t.exposes,
+        t.propertyAlias
       ]),
-      async ([t, r, o, s, n]) => {
-        this._blockContext.blockEditorAlias = n ?? "", this.blockListValue = {
-          contentData: (t == null ? void 0 : t.filter((i) => i.key == this._blockContext.contentUdi)) ?? [],
-          settingsData: (r == null ? void 0 : r.filter((i) => i.key == this._blockContext.settingsUdi)) ?? [],
-          expose: (s == null ? void 0 : s.filter((i) => i.contentKey == this._blockContext.contentUdi)) ?? [],
+      async ([e, i, r, o, s]) => {
+        this._blockContext.blockEditorAlias = s ?? "", this.blockListValue = {
+          contentData: (e == null ? void 0 : e.filter((n) => n.key == this._blockContext.contentUdi)) ?? [],
+          settingsData: (i == null ? void 0 : i.filter((n) => n.key == this._blockContext.settingsUdi)) ?? [],
+          expose: (o == null ? void 0 : o.filter((n) => n.contentKey == this._blockContext.contentUdi)) ?? [],
           layout: {
-            "Umbraco.BlockList": (o == null ? void 0 : o.filter((i) => i.contentKey == this._blockContext.contentUdi)) ?? []
+            "Umbraco.BlockList": (r == null ? void 0 : r.filter((n) => n.contentKey == this._blockContext.contentUdi)) ?? []
           }
-        }, this._blockContext.blockIndex = t == null ? void 0 : t.indexOf(this.blockListValue.contentData[0]), g(this, b, fe).call(this);
+        }, this._blockContext.blockIndex = e == null ? void 0 : e.indexOf(this.blockListValue.contentData[0]), w(this, y, le).call(this);
       }
     );
   });
 };
-fe = async function() {
-  const e = this._blockContext;
-  if (w(this, f) != null && e.unique == "" && (e.unique = w(this, f).getUnique()), w(this, f) != null && e.documentTypeUnique == "" && (e.documentTypeUnique = w(this, f).getDocumentTypeUnique()), !g(this, b, Xe).call(this, e)) {
+le = async function() {
+  const t = this._blockContext;
+  if (v(this, f) != null && t.unique == "" && (t.unique = v(this, f).getUnique()), v(this, f) != null && t.documentTypeUnique == "" && (t.documentTypeUnique = v(this, f).getDocumentTypeUnique()), !w(this, y, Ve).call(this, t)) {
     this._error = "Insufficient data for block preview", this._isLoading = !1;
     return;
   }
   this._isLoading = !0, this._error = null;
   try {
-    const { data: r, error: o } = await H(this, Y.previewListBlock({
-      body: JSON.stringify(this.blockListValue),
-      query: {
-        blockEditorAlias: e.blockEditorAlias,
-        nodeKey: e.unique,
-        contentElementAlias: e.contentElementTypeAlias,
-        documentTypeUnique: e.documentTypeUnique,
-        contentUdi: e.contentUdi,
-        settingsUdi: e.settingsUdi,
-        culture: e.culture,
-        blockIndex: e.blockIndex
-      }
-    }));
-    r ? (this._htmlMarkup = r ?? "", this._isLoading = !1) : oe.isUmbApiError(o) && (this._error = o.message, this._isLoading = !1);
-  } catch (r) {
-    this._error = "Failed to render block preview", this._isLoading = !1, console.error("Block preview error:", r);
+    const i = {
+      blockEditorAlias: t.blockEditorAlias,
+      nodeKey: t.unique,
+      contentElementAlias: t.contentElementTypeAlias,
+      documentTypeUnique: t.documentTypeUnique,
+      contentUdi: t.contentUdi,
+      settingsUdi: t.settingsUdi,
+      culture: t.culture,
+      blockIndex: t.blockIndex,
+      requestBody: JSON.stringify(this.blockListValue)
+    }, { data: r } = await W(this, H.previewListBlock(i));
+    this._htmlMarkup = r ?? "", this._isLoading = !1;
+  } catch (i) {
+    this._error = "Failed to render block preview", this._isLoading = !1, console.error("Block preview error:", i);
   }
 };
-Xe = function(e) {
-  return e.unique != "" && e.blockEditorAlias != "" && e.contentUdi != "" && e.contentElementTypeAlias != "";
+Ve = function(t) {
+  return t.unique != "" && t.blockEditorAlias != "" && t.contentUdi != "" && t.contentElementTypeAlias != "";
 };
 h.styles = [
-  se`
+  Z`
         a {
           display: block;
           color: inherit;
@@ -789,121 +900,116 @@ h.styles = [
         }
     `
 ];
-C([
+T([
   u({ attribute: !1 })
 ], h.prototype, "content", 2);
-C([
+T([
   u({ attribute: !1 })
 ], h.prototype, "settingsData", 2);
-C([
+T([
   u({ attribute: !1 })
 ], h.prototype, "contentKey", 2);
-C([
+T([
   u({ attribute: !1 })
 ], h.prototype, "config", 2);
-C([
-  E()
+T([
+  C()
 ], h.prototype, "_htmlMarkup", 2);
-C([
-  E()
+T([
+  C()
 ], h.prototype, "_isLoading", 2);
-C([
-  E()
+T([
+  C()
 ], h.prototype, "_error", 2);
-C([
-  E()
+T([
+  C()
 ], h.prototype, "_blockListValue", 2);
-C([
+T([
   u({ attribute: !1 })
 ], h.prototype, "blockListValue", 1);
-h = C([
-  ne(At)
+h = T([
+  ee(vt)
 ], h);
-var Ot = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, Fe = (e) => {
-  throw TypeError(e);
-}, O = (e, t, r, o) => {
-  for (var s = o > 1 ? void 0 : o ? Pt(t, r) : t, n = e.length - 1, i; n >= 0; n--)
-    (i = e[n]) && (s = (o ? i(t, r, s) : i(s)) || s);
-  return o && s && Ot(t, r, s), s;
-}, $t = (e, t, r) => t.has(e) || Fe("Cannot " + r), Dt = (e, t, r) => t.has(e) ? Fe("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), F = (e, t, r) => ($t(e, t, "access private method"), r), R, He, Je, be;
-const Bt = "rich-text-preview";
-let k = class extends ce {
+var wt = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, Ie = (t) => {
+  throw TypeError(t);
+}, U = (t, e, i, r) => {
+  for (var o = r > 1 ? void 0 : r ? Tt(e, i) : e, s = t.length - 1, n; s >= 0; s--)
+    (n = t[s]) && (o = (r ? n(e, i, o) : n(o)) || o);
+  return r && o && wt(e, i, o), o;
+}, gt = (t, e, i) => e.has(t) || Ie("Cannot " + i), Ct = (t, e, i) => e.has(t) ? Ie("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), G = (t, e, i) => (gt(t, e, "access private method"), i), B, Ke, je, ue;
+const Et = "rich-text-preview";
+let m = class extends re {
   constructor() {
-    var e;
-    super(), Dt(this, R), this.htmlMarkup = "", this.unique = "", this.documentTypeUnique = "", this.blockEditorAlias = "", this.culture = "", this._blockRteValue = {
+    var t;
+    super(), Ct(this, B), this.htmlMarkup = "", this.unique = "", this.documentTypeUnique = "", this.blockEditorAlias = "", this.culture = "", this._blockRteValue = {
       layout: {},
       expose: [],
       contentData: [],
       settingsData: []
-    }, this.consumeContext(ue, async (t) => {
-      t && (this.culture = t.getVariantId().culture ?? "");
-    }), this.unique = (e = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)) == null ? void 0 : e[0], F(this, R, He).call(this);
+    }, this.consumeContext(oe, async (e) => {
+      this.culture = e.getVariantId().culture ?? "";
+    }), this.unique = (t = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)) == null ? void 0 : t[0], G(this, B, Ke).call(this);
   }
-  set blockRteValue(e) {
-    const t = e ? { ...e } : {};
-    t.layout ?? (t.layout = {}), t.contentData ?? (t.contentData = []), t.settingsData ?? (t.settingsData = []), t.expose ?? (t.expose = []), this._blockRteValue = t;
+  set blockRteValue(t) {
+    const e = t ? { ...t } : {};
+    e.layout ?? (e.layout = {}), e.contentData ?? (e.contentData = []), e.settingsData ?? (e.settingsData = []), e.expose ?? (e.expose = []), this._blockRteValue = e;
   }
   get blockRteValue() {
     return this._blockRteValue;
   }
-  async updated(e) {
-    super.updated(e), e.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
-      F(this, R, be).call(this);
+  async updated(t) {
+    super.updated(t), t.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
+      G(this, B, ue).call(this);
     }, 500));
   }
   render() {
     if (this.htmlMarkup !== "")
-      return S`
-                <a href=${ae(this.workspaceEditContentPath)}>
-                    ${le(this.htmlMarkup)}
+      return D`
+                <a href=${te(this.workspaceEditContentPath)}>
+                    ${ie(this.htmlMarkup)}
                 </a>`;
   }
 };
-R = /* @__PURE__ */ new WeakSet();
-He = function() {
-  this.consumeContext(ot, (e) => {
-    e && this.observe(
-      A([e.alias, e.value]),
-      async ([t, r]) => {
-        this.blockEditorAlias = t, r.hasOwnProperty("blocks") && (r.blocks.length !== 0 && (this.blockRteValue = {
+B = /* @__PURE__ */ new WeakSet();
+Ke = function() {
+  this.consumeContext(ze, (t) => {
+    this.observe(
+      A([t.alias, t.value]),
+      async ([e, i]) => {
+        this.blockEditorAlias = e, i.hasOwnProperty("blocks") && (i.blocks.length !== 0 && (this.blockRteValue = {
           ...this.blockRteValue,
-          contentData: r.blocks.contentData,
-          settingsData: r.blocks.settingsData,
-          expose: r.blocks.expose,
-          layout: r.blocks.layout
-        }), F(this, R, Je).call(this));
+          contentData: i.blocks.contentData,
+          settingsData: i.blocks.settingsData,
+          expose: i.blocks.expose,
+          layout: i.blocks.layout
+        }), G(this, B, je).call(this));
       }
     );
   });
 };
-Je = function() {
-  this.consumeContext(lt, (e) => {
-    e && this.observe(
-      A([e.workspaceEditContentPath, e.contentElementTypeAlias]),
-      async ([t, r]) => {
-        this.contentElementTypeAlias = r, this.workspaceEditContentPath = t, await F(this, R, be).call(this);
+je = function() {
+  this.consumeContext(tt, (t) => {
+    this.observe(
+      A([t.workspaceEditContentPath, t.contentElementTypeAlias]),
+      async ([e, i]) => {
+        this.contentElementTypeAlias = i, this.workspaceEditContentPath = e, await G(this, B, ue).call(this);
       }
     );
   });
 };
-be = async function() {
+ue = async function() {
   if (!this.unique || !this.blockEditorAlias || !this.contentElementTypeAlias || !this.blockRteValue.contentData || !this.blockRteValue.layout) return;
-  const { data: e, error: t } = await H(this, Y.previewRichTextMarkup({
-    body: JSON.stringify(this.blockRteValue),
-    query: {
-      blockEditorAlias: this.blockEditorAlias,
-      nodeKey: this.unique,
-      contentElementAlias: this.contentElementTypeAlias,
-      culture: this.culture
-    }
-  }), { disableNotifications: !0 });
-  if (e)
-    this.htmlMarkup = e ?? "";
-  else if (oe.isUmbApiError(t))
-    throw t;
+  const t = {
+    blockEditorAlias: this.blockEditorAlias,
+    nodeKey: this.unique,
+    contentElementAlias: this.contentElementTypeAlias,
+    culture: this.culture,
+    requestBody: JSON.stringify(this.blockRteValue)
+  }, { data: e } = await W(this, H.previewRichTextMarkup(t));
+  e && (this.htmlMarkup = e);
 };
-k.styles = [
-  se`
+m.styles = [
+  Z`
             a {
               display: block;
               color: inherit;
@@ -952,126 +1058,121 @@ k.styles = [
             }
         `
 ];
-O([
+U([
   u({ attribute: !1 })
-], k.prototype, "content", 2);
-O([
+], m.prototype, "content", 2);
+U([
   u({ attribute: !1 })
-], k.prototype, "settingsData", 2);
-O([
+], m.prototype, "settingsData", 2);
+U([
   u({ attribute: !1 })
-], k.prototype, "contentKey", 2);
-O([
+], m.prototype, "contentKey", 2);
+U([
   u({ attribute: !1 })
-], k.prototype, "config", 2);
-O([
-  E()
-], k.prototype, "htmlMarkup", 2);
-O([
-  E()
-], k.prototype, "_blockRteValue", 2);
-O([
+], m.prototype, "config", 2);
+U([
+  C()
+], m.prototype, "htmlMarkup", 2);
+U([
+  C()
+], m.prototype, "_blockRteValue", 2);
+U([
   u({ attribute: !1 })
-], k.prototype, "blockRteValue", 1);
-k = O([
-  ne(Bt)
-], k);
-const St = [
+], m.prototype, "blockRteValue", 1);
+m = U([
+  ee(Et)
+], m);
+const xt = [
   {
     type: "globalContext",
     alias: "BlockPreview.Context",
     name: "BlockPreview Context",
-    js: () => Promise.resolve().then(() => Lt)
+    js: () => Promise.resolve().then(() => Ut)
   }
-], Rt = [...St];
-var G, L, D, B;
-class ie extends ge {
-  constructor(r) {
-    super(r);
-    P(this, G);
-    P(this, L);
-    P(this, D);
-    P(this, B);
-    $(this, L, new it(void 0)), this.settings = p(this, L).asObservable(), $(this, D, new ke("")), this.unique = p(this, D).asObservable(), $(this, B, new ke("")), this.documentTypeUnique = p(this, B).asObservable(), $(this, G, new Oe(r)), this.getSettings();
+], At = [...xt];
+var $, O, P, S;
+class Q extends ke {
+  constructor(i) {
+    super(i);
+    R(this, $);
+    R(this, O);
+    R(this, P);
+    R(this, S);
+    q(this, O, new Je(void 0)), this.settings = d(this, O).asObservable(), q(this, P, new be("")), this.unique = d(this, P).asObservable(), q(this, S, new be("")), this.documentTypeUnique = d(this, S).asObservable(), q(this, $, new ge(i)), this.getSettings();
   }
   async getSettings() {
-    const r = await p(this, G).getSettings();
-    p(this, L).setValue(r);
+    const i = await d(this, $).getSettings();
+    d(this, O).setValue(i);
   }
   getUnique() {
-    return p(this, D).getValue();
+    return d(this, P).getValue();
   }
-  async setUnique(r) {
-    r != "" && p(this, D).setValue(r);
+  async setUnique(i) {
+    i != "" && d(this, P).setValue(i);
   }
   getDocumentTypeUnique() {
-    return p(this, B).getValue();
+    return d(this, S).getValue();
   }
-  async setDocumentTypeUnique(r) {
-    r != "" && p(this, B).setValue(r);
+  async setDocumentTypeUnique(i) {
+    i != "" && d(this, S).setValue(i);
   }
 }
-G = new WeakMap(), L = new WeakMap(), D = new WeakMap(), B = new WeakMap();
-const Lt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+$ = new WeakMap(), O = new WeakMap(), P = new WeakMap(), S = new WeakMap();
+const Ut = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  BlockPreviewContext: ie,
-  default: ie
-}, Symbol.toStringTag, { value: "Module" })), Qt = async (e, t) => {
-  e.consumeContext(et, async (r) => {
-    var a, l, q;
-    if (!r) return;
-    const o = r.getOpenApiConfiguration();
-    M.setConfig({
-      auth: () => r.getLatestToken(),
-      baseUrl: o.base,
-      credentials: o.credentials
-    });
-    const n = await new Oe(e).getSettings();
-    let i = [];
-    if (n) {
-      if (n.blockGrid.enabled) {
-        let c = {
-          type: "blockEditorCustomView",
-          alias: "BlockPreview.GridCustomView",
-          name: "BlockPreview Grid Custom View",
-          element: y,
-          forBlockEditor: "block-grid"
-        };
-        ((a = n.blockGrid.contentTypes) == null ? void 0 : a.length) !== 0 && (c.forContentTypeAlias = n.blockGrid.contentTypes), i.push(c);
-      }
-      if (n.blockList.enabled) {
-        let c = {
-          type: "blockEditorCustomView",
-          alias: "BlockPreview.ListCustomView",
-          name: "BlockPreview List Custom View",
-          element: h,
-          forBlockEditor: "block-list"
-        };
-        ((l = n.blockList.contentTypes) == null ? void 0 : l.length) !== 0 && (c.forContentTypeAlias = n.blockList.contentTypes), i.push(c);
-      }
-      if (n.richText.enabled) {
-        let c = {
-          type: "blockEditorCustomView",
-          alias: "BlockPreview.RichTextCustomView",
-          name: "BlockPreview Rich Text Custom View",
-          element: k,
-          forBlockEditor: "block-rte"
-        };
-        ((q = n.richText.contentTypes) == null ? void 0 : q.length) !== 0 && (c.forContentTypeAlias = n.richText.contentTypes), i.push(c);
-      }
+  BlockPreviewContext: Q,
+  default: Q
+}, Symbol.toStringTag, { value: "Module" })), Gt = async (t, e) => {
+  var s, n, a;
+  const r = await new ge(t).getSettings();
+  let o = [];
+  if (r) {
+    if (r.blockGrid.enabled) {
+      let c = {
+        type: "blockEditorCustomView",
+        alias: "BlockPreview.GridCustomView",
+        name: "BlockPreview Grid Custom View",
+        element: b,
+        forBlockEditor: "block-grid"
+      };
+      ((s = r.blockGrid.contentTypes) == null ? void 0 : s.length) !== 0 && (c.forContentTypeAlias = r.blockGrid.contentTypes), o.push(c);
     }
-    t.registerMany([
-      ...i,
-      ...Rt
-    ]), e.provideContext(he, new ie(e));
+    if (r.blockList.enabled) {
+      let c = {
+        type: "blockEditorCustomView",
+        alias: "BlockPreview.ListCustomView",
+        name: "BlockPreview List Custom View",
+        element: h,
+        forBlockEditor: "block-list"
+      };
+      ((n = r.blockList.contentTypes) == null ? void 0 : n.length) !== 0 && (c.forContentTypeAlias = r.blockList.contentTypes), o.push(c);
+    }
+    if (r.richText.enabled) {
+      let c = {
+        type: "blockEditorCustomView",
+        alias: "BlockPreview.RichTextCustomView",
+        name: "BlockPreview Rich Text Custom View",
+        element: m,
+        forBlockEditor: "block-rte"
+      };
+      ((a = r.richText.contentTypes) == null ? void 0 : a.length) !== 0 && (c.forContentTypeAlias = r.richText.contentTypes), o.push(c);
+    }
+  }
+  e.registerMany([
+    ...o,
+    ...At
+  ]), t.provideContext(se, new Q(t)), t.consumeContext(He, async (c) => {
+    if (!c) return;
+    const l = c.getOpenApiConfiguration();
+    x.BASE = l.base, x.TOKEN = l.token, x.WITH_CREDENTIALS = l.withCredentials, x.CREDENTIALS = l.credentials;
   });
 };
 export {
-  y as BlockGridPreviewCustomView,
+  b as BlockGridPreviewCustomView,
   h as BlockListPreviewCustomView,
-  k as RichTextPreviewCustomView,
-  Ct as SettingsDataSource,
-  Oe as SettingsRepository,
-  Qt as onInit
+  m as RichTextPreviewCustomView,
+  ft as SettingsDataSource,
+  ge as SettingsRepository,
+  Gt as onInit
 };
 //# sourceMappingURL=assets.js.map

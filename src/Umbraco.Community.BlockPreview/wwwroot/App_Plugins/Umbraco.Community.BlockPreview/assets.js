@@ -210,13 +210,13 @@ var ut = async (e, t) => {
     for (let T of n.request._fns) c = await T(c, a);
     let Qe = a.fetch, y = await Qe(c);
     for (let T of n.response._fns) y = await T(y, c, a);
-    let K = { request: c, response: y };
+    let j = { request: c, response: y };
     if (y.ok) {
-      if (y.status === 204 || y.headers.get("Content-Length") === "0") return { data: {}, ...K };
+      if (y.status === 204 || y.headers.get("Content-Length") === "0") return { data: {}, ...j };
       let T = (a.parseAs === "auto" ? yt(y.headers.get("Content-Type")) : a.parseAs) ?? "json";
-      if (T === "stream") return { data: y.body, ...K };
+      if (T === "stream") return { data: y.body, ...j };
       let W = await y[T]();
-      return T === "json" && (a.responseValidator && await a.responseValidator(W), a.responseTransformer && (W = await a.responseTransformer(W))), { data: W, ...K };
+      return T === "json" && (a.responseValidator && await a.responseValidator(W), a.responseTransformer && (W = await a.responseTransformer(W))), { data: W, ...j };
     }
     let G = await y.text();
     try {
@@ -226,7 +226,7 @@ var ut = async (e, t) => {
     let M = G;
     for (let T of n.error._fns) M = await T(G, y, c, a);
     if (M = M || {}, a.throwOnError) throw M;
-    return { error: M, ...K };
+    return { error: M, ...j };
   };
   return { buildUrl: ve, connect: (i) => s({ ...i, method: "CONNECT" }), delete: (i) => s({ ...i, method: "DELETE" }), get: (i) => s({ ...i, method: "GET" }), getConfig: r, head: (i) => s({ ...i, method: "HEAD" }), interceptors: n, options: (i) => s({ ...i, method: "OPTIONS" }), patch: (i) => s({ ...i, method: "PATCH" }), post: (i) => s({ ...i, method: "POST" }), put: (i) => s({ ...i, method: "PUT" }), request: s, setConfig: o, trace: (i) => s({ ...i, method: "TRACE" }) };
 };
@@ -358,6 +358,12 @@ let m = class extends ce {
       E(this, _, Ve).call(this);
     }, 500));
   }
+  _filterLayouts(e) {
+    if (!e || e.length === 0)
+      return [];
+    const t = e.filter((o) => o.contentKey === this._blockContext.contentUdi);
+    return t.length > 0 ? t : e.flatMap((o) => o.areas || []).flatMap((o) => (o == null ? void 0 : o.items) || []).filter((o) => o && o.contentKey === this._blockContext.contentUdi);
+  }
   _handleClick(e) {
     var s;
     let t = !0;
@@ -459,9 +465,7 @@ Me = async function() {
           contentData: (t == null ? void 0 : t.filter((i) => i.key == this._blockContext.contentUdi)) ?? [],
           settingsData: (r == null ? void 0 : r.filter((i) => i.key == this._blockContext.settingsUdi)) ?? [],
           expose: (n == null ? void 0 : n.filter((i) => i.contentKey == this._blockContext.contentUdi)) ?? [],
-          layout: {
-            "Umbraco.BlockGrid": (o == null ? void 0 : o.filter((i) => i.contentKey == this._blockContext.contentUdi)) ?? []
-          }
+          layout: { "Umbraco.BlockGrid": this._filterLayouts(o) }
         }, this._blockContext.blockIndex = t.indexOf(this.blockGridValue.contentData[0]);
       }
     );
@@ -588,7 +592,7 @@ var At = Object.defineProperty, qt = Object.getOwnPropertyDescriptor, Ie = (e) =
   for (var n = o > 1 ? void 0 : o ? qt(t, r) : t, s = e.length - 1, i; s >= 0; s--)
     (i = e[s]) && (n = (o ? i(t, r, n) : i(n)) || n);
   return o && n && At(t, r, n), n;
-}, de = (e, t, r) => t.has(e) || Ie("Cannot " + r), w = (e, t, r) => (de(e, t, "read from private field"), t.get(e)), ee = (e, t, r) => t.has(e) ? Ie("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), je = (e, t, r, o) => (de(e, t, "write to private field"), t.set(e, r), r), g = (e, t, r) => (de(e, t, "access private method"), r), f, X, b, Ke, Ge, We, ze, re, Xe, fe, He;
+}, de = (e, t, r) => t.has(e) || Ie("Cannot " + r), w = (e, t, r) => (de(e, t, "read from private field"), t.get(e)), ee = (e, t, r) => t.has(e) ? Ie("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), Ke = (e, t, r, o) => (de(e, t, "write to private field"), t.set(e, r), r), g = (e, t, r) => (de(e, t, "access private method"), r), f, X, b, je, Ge, We, ze, re, Xe, fe, He;
 const Ot = "block-list-preview";
 let h = class extends ce {
   constructor() {
@@ -609,7 +613,7 @@ let h = class extends ce {
       contentData: [],
       settingsData: []
     }, this.consumeContext(he, (e) => {
-      je(this, f, e), g(this, b, Ke).call(this);
+      Ke(this, f, e), g(this, b, je).call(this);
     });
   }
   set blockListValue(e) {
@@ -657,7 +661,7 @@ let h = class extends ce {
 f = /* @__PURE__ */ new WeakMap();
 X = /* @__PURE__ */ new WeakMap();
 b = /* @__PURE__ */ new WeakSet();
-Ke = function() {
+je = function() {
   g(this, b, Ge).call(this), g(this, b, We).call(this), g(this, b, ze).call(this);
 };
 Ge = function() {
@@ -674,7 +678,7 @@ We = function() {
 };
 ze = function() {
   this.getContext(Te).then((e) => {
-    e && (je(this, X, e), this.observe(
+    e && (Ke(this, X, e), this.observe(
       q([e.unique, e.contentTypeUnique]),
       async ([t, r]) => {
         var o, n;
@@ -1011,18 +1015,18 @@ const Rt = [
     js: () => Promise.resolve().then(() => Mt)
   }
 ], St = [...Rt];
-var j, S, D, $;
+var K, S, D, $;
 class ie extends ge {
   constructor(r) {
     super(r);
-    P(this, j);
+    P(this, K);
     P(this, S);
     P(this, D);
     P(this, $);
-    B(this, S, new ot(void 0)), this.settings = p(this, S).asObservable(), B(this, D, new ke("")), this.unique = p(this, D).asObservable(), B(this, $, new ke("")), this.documentTypeUnique = p(this, $).asObservable(), B(this, j, new Pe(r)), this.getSettings();
+    B(this, S, new ot(void 0)), this.settings = p(this, S).asObservable(), B(this, D, new ke("")), this.unique = p(this, D).asObservable(), B(this, $, new ke("")), this.documentTypeUnique = p(this, $).asObservable(), B(this, K, new Pe(r)), this.getSettings();
   }
   async getSettings() {
-    const r = await p(this, j).getSettings();
+    const r = await p(this, K).getSettings();
     p(this, S).setValue(r);
   }
   getUnique() {
@@ -1038,7 +1042,7 @@ class ie extends ge {
     r != "" && p(this, $).setValue(r);
   }
 }
-j = new WeakMap(), S = new WeakMap(), D = new WeakMap(), $ = new WeakMap();
+K = new WeakMap(), S = new WeakMap(), D = new WeakMap(), $ = new WeakMap();
 const Mt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   BlockPreviewContext: ie,

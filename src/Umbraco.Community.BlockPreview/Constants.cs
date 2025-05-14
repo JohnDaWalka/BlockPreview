@@ -18,6 +18,10 @@
 
         public static partial class ErrorMessages
         {
+            public static string RenderError = "<strong>Something went wrong rendering a preview.</strong><br/><pre>{0}</pre>";
+
+            public static string ModelsBuilderError = "Strongly typed models must be generated and exist on disk for BlockPreview to work.";
+
             public static string ErrorTemplate = "<div class=\"preview-alert preview-alert-error\">{0}</div>";
 
             public static string WarningTemplate = "<div class=\"preview-alert preview-alert-warning\">{0}</div>";
@@ -43,10 +47,14 @@
             public static string InvalidMatchingBlockGridConfiguration = "A matching block grid configuration could not be found";
 
             public static string ViewNotFound = "The view <code>{0}.cshtml</code> could not be found. Searched the following locations: <pre>{1}</pre>";
+
+            public static string LoggerError = "Error rendering preview for block {0}";
         }
 
         public static partial class CacheKeys
         {
+            public static string Content = "BlockPreview_Content_{0}";
+            public static string GeneratedModels = "BlockPreview_GeneratedModels";
             public static string BlockType = "BlockPreview_BlockType_{0}";
             public static string ContentType => "BlockPreview_ContentType_{0}";
             public static string DataType => "BlockPreview_DataType_{0}";

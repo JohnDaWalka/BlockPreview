@@ -33,6 +33,15 @@ export class BlockGridPreviewCustomView
 
     @property({ attribute: false })
     config?: UmbBlockEditorCustomViewConfiguration;
+    
+    @property({ attribute: false })
+    unpublished?: boolean;
+
+    @property({ attribute: false })
+    icon?: string;
+
+    @property({ attribute: false })
+    label?: string;
 
     @state()
     private _htmlMarkup: string = '';
@@ -46,6 +55,9 @@ export class BlockGridPreviewCustomView
     private _styleElement?: HTMLLinkElement;
 
     private _previewTimeout: number | undefined;
+
+    @state()
+    private _sortModeActive: boolean = false;
 
     private _blockContext = {
         unique: "",
@@ -103,9 +115,18 @@ export class BlockGridPreviewCustomView
     }
 
     #setupContextObservers() {
+        this.#observeSortMode();
         this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
         this.#observeDocumentWorkspace();
+    }
+
+    #observeSortMode() {
+        this.observe(this.#blockPreviewContext?.sortModeActive, (isActive) => {
+            if (isActive !== undefined) {
+                this._sortModeActive = isActive;
+            }
+        });
     }
 
     #observeBlockPreviewSettings() {
@@ -322,21 +343,22 @@ export class BlockGridPreviewCustomView
         }
     }
 
-    render() {
-        if (this._isLoading) {
-            return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
-        }
+    override render() {
+        if (this._sortModeActive === false) {
+            if (this._isLoading) {
+                return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
+            }
 
-        if (this._error) {
-            return html`
+            if (this._error) {
+                return html`
                 <div class="preview-alert preview-alert-error" role="alert">
                     ${this._error}
                 </div>
             `;
-        }
+            }
 
-        if (this._htmlMarkup) {
-            return html`
+            if (this._htmlMarkup) {
+                return html`
                 ${this._styleElement}
                 <a
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
@@ -347,9 +369,19 @@ export class BlockGridPreviewCustomView
                     ${unsafeHTML(this._htmlMarkup)}
                 </a>
             `;
+            }
         }
 
-        return null;
+        else return html`<umb-block-grid-block
+            class="umb-block-grid__block--view"
+            .label=${this.label}
+            .icon=${this.icon}
+            .unpublished=${this.unpublished}
+            .config=${this.config}
+            .content=${this.content}
+            .settings=${this.settingsData}>
+            </umb-block-grid-block>
+        `;
     }
 
     static styles = [

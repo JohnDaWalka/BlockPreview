@@ -361,7 +361,7 @@ export class BlockListPreviewCustomView
             .unpublished=${this.unpublished}
             .config=${this.config}
             .content=${this.content}
-            .settings=${this.settingsData}>
+            .settings=${this.settings}>
             </umb-ref-list-block>
         `;
     }

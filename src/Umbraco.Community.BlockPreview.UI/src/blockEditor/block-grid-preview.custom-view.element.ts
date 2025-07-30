@@ -381,7 +381,7 @@ export class BlockGridPreviewCustomView
             .unpublished=${this.unpublished}
             .config=${this.config}
             .content=${this.content}
-            .settings=${this.settingsData}>
+            .settings=${this.settings}>
             </umb-block-grid-block>
         `;
     }

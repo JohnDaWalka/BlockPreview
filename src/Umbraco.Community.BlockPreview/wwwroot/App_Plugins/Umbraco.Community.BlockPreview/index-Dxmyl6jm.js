@@ -305,7 +305,7 @@ var St = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, Se = (e) =
   for (var s = o > 1 ? void 0 : o ? $t(t, r) : t, a = e.length - 1, i; a >= 0; a--)
     (i = e[a]) && (s = (o ? i(t, r, s) : i(s)) || s);
   return o && s && St(t, r, s), s;
-}, fe = (e, t, r) => t.has(e) || Se("Cannot " + r), g = (e, t, r) => (fe(e, t, "read from private field"), t.get(e)), ee = (e, t, r) => t.has(e) ? Se("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), $e = (e, t, r, o) => (fe(e, t, "write to private field"), t.set(e, r), r), x = (e, t, r) => (fe(e, t, "access private method"), r), b, X, v, qe, Re, De, Le, Ie, re, Ve, Ne, Ke;
+}, fe = (e, t, r) => t.has(e) || Se("Cannot " + r), g = (e, t, r) => (fe(e, t, "read from private field"), t.get(e)), ee = (e, t, r) => t.has(e) ? Se("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), $e = (e, t, r, o) => (fe(e, t, "write to private field"), t.set(e, r), r), x = (e, t, r) => (fe(e, t, "access private method"), r), b, X, v, qe, Re, Le, De, Ie, re, Ve, Ne, Ke;
 const qt = "block-grid-preview";
 let p = class extends ue {
   constructor() {
@@ -388,7 +388,7 @@ let p = class extends ue {
             .unpublished=${this.unpublished}
             .config=${this.config}
             .content=${this.content}
-            .settings=${this.settingsData}>
+            .settings=${this.settings}>
             </umb-block-grid-block>
         `;
   }
@@ -397,7 +397,7 @@ b = /* @__PURE__ */ new WeakMap();
 X = /* @__PURE__ */ new WeakMap();
 v = /* @__PURE__ */ new WeakSet();
 qe = function() {
-  x(this, v, Re).call(this), x(this, v, De).call(this), x(this, v, Le).call(this), x(this, v, Ie).call(this);
+  x(this, v, Re).call(this), x(this, v, Le).call(this), x(this, v, De).call(this), x(this, v, Ie).call(this);
 };
 Re = function() {
   var e;
@@ -405,14 +405,14 @@ Re = function() {
     t !== void 0 && (this._sortModeActive = t);
   });
 };
-De = function() {
+Le = function() {
   var e;
   this.observe((e = g(this, b)) == null ? void 0 : e.settings, (t) => {
     var r;
     (r = t == null ? void 0 : t.blockGrid) != null && r.stylesheet && (this._styleElement = document.createElement("link"), this._styleElement.rel = "stylesheet", this._styleElement.href = t.blockGrid.stylesheet);
   });
 };
-Le = function() {
+De = function() {
   this.consumeContext(he, (e) => {
     e && (this._blockContext.culture = e.getVariantId().culture ?? "");
   });
@@ -603,14 +603,14 @@ y([
 p = y([
   ae(qt)
 ], p);
-var Rt = Object.defineProperty, Dt = Object.getOwnPropertyDescriptor, je = (e) => {
+var Rt = Object.defineProperty, Lt = Object.getOwnPropertyDescriptor, je = (e) => {
   throw TypeError(e);
 }, f = (e, t, r, o) => {
-  for (var s = o > 1 ? void 0 : o ? Dt(t, r) : t, a = e.length - 1, i; a >= 0; a--)
+  for (var s = o > 1 ? void 0 : o ? Lt(t, r) : t, a = e.length - 1, i; a >= 0; a--)
     (i = e[a]) && (s = (o ? i(t, r, s) : i(s)) || s);
   return o && s && Rt(t, r, s), s;
 }, be = (e, t, r) => t.has(e) || je("Cannot " + r), C = (e, t, r) => (be(e, t, "read from private field"), t.get(e)), te = (e, t, r) => t.has(e) ? je("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), Ge = (e, t, r, o) => (be(e, t, "write to private field"), t.set(e, r), r), A = (e, t, r) => (be(e, t, "access private method"), r), m, Y, w, We, ze, Xe, Ye, Fe, ie, He, Je, Qe;
-const Lt = "block-list-preview";
+const Dt = "block-list-preview";
 let h = class extends ue {
   constructor() {
     super(), te(this, w), te(this, m), te(this, Y), this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._sortModeActive = !1, this._blockContext = {
@@ -686,7 +686,7 @@ let h = class extends ue {
             .unpublished=${this.unpublished}
             .config=${this.config}
             .content=${this.content}
-            .settings=${this.settingsData}>
+            .settings=${this.settings}>
             </umb-ref-list-block>
         `;
   }
@@ -899,7 +899,7 @@ f([
   c({ attribute: !1 })
 ], h.prototype, "blockListValue", 1);
 h = f([
-  ae(Lt)
+  ae(Dt)
 ], h);
 var It = Object.defineProperty, Vt = Object.getOwnPropertyDescriptor, Ze = (e) => {
   throw TypeError(e);
@@ -907,19 +907,19 @@ var It = Object.defineProperty, Vt = Object.getOwnPropertyDescriptor, Ze = (e) =
   for (var s = o > 1 ? void 0 : o ? Vt(t, r) : t, a = e.length - 1, i; a >= 0; a--)
     (i = e[a]) && (s = (o ? i(t, r, s) : i(s)) || s);
   return o && s && It(t, r, s), s;
-}, Nt = (e, t, r) => t.has(e) || Ze("Cannot " + r), Kt = (e, t, r) => t.has(e) ? Ze("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), F = (e, t, r) => (Nt(e, t, "access private method"), r), D, et, tt, me;
+}, Nt = (e, t, r) => t.has(e) || Ze("Cannot " + r), Kt = (e, t, r) => t.has(e) ? Ze("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, r), F = (e, t, r) => (Nt(e, t, "access private method"), r), L, et, tt, me;
 const jt = "rich-text-preview";
 let T = class extends ue {
   constructor() {
     var e;
-    super(), Kt(this, D), this.htmlMarkup = "", this.unique = "", this.documentTypeUnique = "", this.blockEditorAlias = "", this.culture = "", this._blockRteValue = {
+    super(), Kt(this, L), this.htmlMarkup = "", this.unique = "", this.documentTypeUnique = "", this.blockEditorAlias = "", this.culture = "", this._blockRteValue = {
       layout: {},
       expose: [],
       contentData: [],
       settingsData: []
     }, this.consumeContext(he, async (t) => {
       t && (this.culture = t.getVariantId().culture ?? "");
-    }), this.unique = (e = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)) == null ? void 0 : e[0], F(this, D, et).call(this);
+    }), this.unique = (e = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)) == null ? void 0 : e[0], F(this, L, et).call(this);
   }
   set blockRteValue(e) {
     const t = e ? { ...e } : {};
@@ -930,7 +930,7 @@ let T = class extends ue {
   }
   async updated(e) {
     super.updated(e), e.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
-      F(this, D, me).call(this);
+      F(this, L, me).call(this);
     }, 500));
   }
   render() {
@@ -941,7 +941,7 @@ let T = class extends ue {
                 </a>`;
   }
 };
-D = /* @__PURE__ */ new WeakSet();
+L = /* @__PURE__ */ new WeakSet();
 et = function() {
   this.consumeContext(pt, (e) => {
     e && this.observe(
@@ -953,7 +953,7 @@ et = function() {
           settingsData: r.blocks.settingsData,
           expose: r.blocks.expose,
           layout: r.blocks.layout
-        }), F(this, D, tt).call(this));
+        }), F(this, L, tt).call(this));
       }
     );
   });
@@ -963,7 +963,7 @@ tt = function() {
     e && this.observe(
       B([e.workspaceEditContentPath, e.contentElementTypeAlias]),
       async ([t, r]) => {
-        this.contentElementTypeAlias = r, this.workspaceEditContentPath = t, await F(this, D, me).call(this);
+        this.contentElementTypeAlias = r, this.workspaceEditContentPath = t, await F(this, L, me).call(this);
       }
     );
   });
@@ -1058,20 +1058,20 @@ S([
 T = S([
   ae(jt)
 ], T);
-var K, L, $, q, R;
+var K, D, $, q, R;
 class oe extends Ae {
   constructor(r) {
     super(r);
     P(this, K);
-    P(this, L);
+    P(this, D);
     P(this, $);
     P(this, q);
     P(this, R);
-    M(this, L, new ut(void 0)), this.settings = d(this, L).asObservable(), M(this, $, new ve("")), this.unique = d(this, $).asObservable(), M(this, q, new ve("")), this.documentTypeUnique = d(this, q).asObservable(), M(this, R, new ht(!1)), this.sortModeActive = d(this, R).asObservable(), M(this, K, new rt(r)), this.getSettings(), this.setSortMode(!1);
+    M(this, D, new ut(void 0)), this.settings = d(this, D).asObservable(), M(this, $, new ve("")), this.unique = d(this, $).asObservable(), M(this, q, new ve("")), this.documentTypeUnique = d(this, q).asObservable(), M(this, R, new ht(!1)), this.sortModeActive = d(this, R).asObservable(), M(this, K, new rt(r)), this.getSettings(), this.setSortMode(!1);
   }
   async getSettings() {
     const r = await d(this, K).getSettings();
-    d(this, L).setValue(r);
+    d(this, D).setValue(r);
   }
   getUnique() {
     return d(this, $).getValue();
@@ -1092,7 +1092,7 @@ class oe extends Ae {
     d(this, R).setValue(r);
   }
 }
-K = new WeakMap(), L = new WeakMap(), $ = new WeakMap(), q = new WeakMap(), R = new WeakMap();
+K = new WeakMap(), D = new WeakMap(), $ = new WeakMap(), q = new WeakMap(), R = new WeakMap();
 const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   BlockPreviewContext: oe,
@@ -1113,7 +1113,7 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ..._t.manifest,
     type: "propertyAction",
     kind: "sortMode",
-    api: () => import("./sort-mode.property-action-_Il2-XQM.js"),
+    api: () => import("./sort-mode.property-action-BLNt1EvK.js"),
     weight: 100,
     meta: {
       icon: "icon-navigation-vertical",
@@ -1129,7 +1129,7 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     kind: "sortMode",
     alias: "BlockPreview.PropertyAction.Grid.SortMode",
     name: "Block Grid Sort Mode Property Action",
-    api: () => import("./block-grid-sort-mode-B0yAgG_Y.js"),
+    api: () => import("./block-grid-sort-mode-lcelcuNo.js"),
     forPropertyEditorUis: [ct],
     conditions: [
       {
@@ -1143,7 +1143,7 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     kind: "sortMode",
     alias: "BlockPreview.PropertyAction.List.SortMode",
     name: "Block List Sort Mode Property Action",
-    api: () => import("./block-list-sort-mode-CFFvC1NP.js"),
+    api: () => import("./block-list-sort-mode-Ch21YhyN.js"),
     forPropertyEditorUis: [mt],
     conditions: [
       {
@@ -1238,4 +1238,4 @@ export {
   rt as c,
   pr as o
 };
-//# sourceMappingURL=index-CawXRmTJ.js.map
+//# sourceMappingURL=index-Dxmyl6jm.js.map

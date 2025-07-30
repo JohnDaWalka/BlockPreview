@@ -104,8 +104,6 @@ export class BlockGridPreviewCustomView
     protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
         super.updated(_changedProperties);
 
-        console.log('changedProperties', _changedProperties);
-
         if (_changedProperties.has('content') || _changedProperties.has('settings')) {
             if (this._previewTimeout) {
                 clearTimeout(this._previewTimeout);

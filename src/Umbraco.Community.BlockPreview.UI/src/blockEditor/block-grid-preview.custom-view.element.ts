@@ -2,7 +2,7 @@ import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/back
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
-import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, html, ifDefined, property, PropertyValueMap, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
@@ -26,7 +26,7 @@ export class BlockGridPreviewCustomView
     content?: UmbBlockDataType;
 
     @property({ attribute: false })
-    settingsData?: UmbBlockDataType;
+    settings?: UmbBlockDataType;
 
     @property({ attribute: false })
     contentKey?: string;
@@ -101,10 +101,12 @@ export class BlockGridPreviewCustomView
         });
     }
 
-    async updated(changedProperties: Map<string | number | symbol, unknown>) {
-        super.updated(changedProperties);
+    protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+        super.updated(_changedProperties);
 
-        if (changedProperties.has('content')) {
+        console.log('changedProperties', _changedProperties);
+
+        if (_changedProperties.has('content') || _changedProperties.has('settings')) {
             if (this._previewTimeout) {
                 clearTimeout(this._previewTimeout);
             }

@@ -34,7 +34,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly ContextCultureService _contextCultureService;
         private readonly IBlockPreviewService _blockPreviewService;
         private readonly ILanguageService _languageService;
-        private readonly BlockPreviewOptions _blockPreviewSettings;
+        private readonly IOptions<BlockPreviewOptions> _blockPreviewSettings;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly ITypeFinder _typeFinder;
         private readonly IDocumentCacheService _documentCacheService;
@@ -53,7 +53,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             ContextCultureService contextCultureSwitcher,
             IBlockPreviewService blockPreviewService,
             ILanguageService languageService,
-            IOptionsMonitor<BlockPreviewOptions> blockPreviewSettings,
+            IOptions<BlockPreviewOptions> blockPreviewSettings,
             ITypeFinder typeFinder,
             AppCaches appCaches,
             IElementsCache elementsCache,
@@ -67,7 +67,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _contextCultureService = contextCultureSwitcher;
             _blockPreviewService = blockPreviewService;
             _languageService = languageService;
-            _blockPreviewSettings = blockPreviewSettings.CurrentValue;
+            _blockPreviewSettings = blockPreviewSettings;
             _typeFinder = typeFinder;
             _runtimeCache = appCaches.RuntimeCache;
             _documentCacheService = documentCacheService;
@@ -246,7 +246,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         [AllowAnonymous]
         [HttpGet("settings")]
         [ProducesResponseType(typeof(BlockPreviewOptions), 200)]
-        public BlockPreviewOptions GetSettings() => _blockPreviewSettings;
+        public BlockPreviewOptions GetSettings() => _blockPreviewSettings.Value;
         #endregion
 
         #region Private

@@ -1033,7 +1033,9 @@ export type HealthCheckActionRequestModel = {
     providedValue?: string | null;
     providedValueValidation?: string | null;
     providedValueValidationRegex?: string | null;
-    actionParameters?: {} | null;
+    actionParameters?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 export type HealthCheckGroupPresentationModel = {
@@ -1115,7 +1117,9 @@ export type IndexResponseModel = {
     searcherName: string;
     documentCount: number;
     fieldCount: number;
-    providerProperties?: {} | null;
+    providerProperties?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 export type InstallRequestModelReadable = {
@@ -1257,6 +1261,9 @@ export type MediaResponseModel = {
     values: Array<MediaValueResponseModel>;
     variants: Array<MediaVariantResponseModel>;
     id: string;
+    /**
+     * @deprecated
+     */
     urls: Array<MediaUrlInfoModel>;
     isTrashed: boolean;
     mediaType: MediaTypeReferenceResponseModel;
@@ -6844,6 +6851,7 @@ export type GetItemDocumentSearchData = {
     query?: {
         query?: string;
         trashed?: boolean;
+        culture?: string;
         skip?: number;
         take?: number;
         parentId?: string;
@@ -9135,6 +9143,7 @@ export type GetItemMediaSearchData = {
     query?: {
         query?: string;
         trashed?: boolean;
+        culture?: string;
         skip?: number;
         take?: number;
         parentId?: string;
@@ -12979,10 +12988,6 @@ export type GetSegmentErrors = {
      * The resource is protected and requires an authentication token
      */
     401: unknown;
-    /**
-     * The authenticated user does not have access to this resource
-     */
-    403: unknown;
 };
 
 export type GetSegmentError = GetSegmentErrors[keyof GetSegmentErrors];
@@ -16219,6 +16224,10 @@ export type GetWebhookByIdLogsErrors = {
      * The resource is protected and requires an authentication token
      */
     401: unknown;
+    /**
+     * The authenticated user does not have access to this resource
+     */
+    403: unknown;
 };
 
 export type GetWebhookByIdLogsResponses = {
@@ -16275,6 +16284,10 @@ export type GetWebhookLogsErrors = {
      * The resource is protected and requires an authentication token
      */
     401: unknown;
+    /**
+     * The authenticated user does not have access to this resource
+     */
+    403: unknown;
 };
 
 export type GetWebhookLogsResponses = {
@@ -16287,5 +16300,5 @@ export type GetWebhookLogsResponses = {
 export type GetWebhookLogsResponse = GetWebhookLogsResponses[keyof GetWebhookLogsResponses];
 
 export type ClientOptions = {
-    baseUrl: 'http://localhost:26292' | (string & {});
+    baseUrl: 'http://localhost:26293' | (string & {});
 };

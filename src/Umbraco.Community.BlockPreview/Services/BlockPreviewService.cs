@@ -399,10 +399,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private void FormatBlockData(List<BlockItemData>? blockData)
         {
-            if (blockData == null)
-                return;
-
-            if (blockData.Any() == false)
+            if (blockData == null || blockData.Count != 0)
                 return;
 
             foreach (var contentData in blockData)
@@ -522,7 +519,6 @@ namespace Umbraco.Community.BlockPreview.Services
                     blockItemType = settingsBlockType != null ?
                         typeof(RichTextBlockItem<,>).MakeGenericType(contentBlockType, settingsBlockType) :
                         typeof(RichTextBlockItem<>).MakeGenericType(contentBlockType);
-
                 }
                 else
                 {

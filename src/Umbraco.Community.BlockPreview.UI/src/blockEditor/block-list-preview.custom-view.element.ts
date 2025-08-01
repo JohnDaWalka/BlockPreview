@@ -222,7 +222,13 @@ export class BlockListPreviewCustomView
                         context.exposes,
                         context.propertyAlias
                     ]),
-                    async ([contents, settings, layouts, exposes, propertyAlias]) => {
+                    async ([
+                        contents,
+                        settings,
+                        layouts,
+                        exposes,
+                        propertyAlias
+                    ]) => {
                         this._blockContext.blockEditorAlias = propertyAlias ?? '';
 
                         this.blockListValue = {
@@ -262,7 +268,8 @@ export class BlockListPreviewCustomView
 
         try {
             const { data, error } = await tryExecute(this, BlockPreviewService.previewListBlock({
-                body: JSON.stringify(this.blockListValue), query: {
+                body: JSON.stringify(this.blockListValue),
+                query: {
                     blockEditorAlias: context.blockEditorAlias,
                     nodeKey: context.unique,
                     contentElementAlias: context.contentElementTypeAlias,
@@ -346,6 +353,7 @@ export class BlockListPreviewCustomView
                         href=${ifDefined(this._blockContext.workspaceEditContentPath)}
                         @click=${this._handleClick}
                         aria-label="Edit block"
+                        class="block-preview-edit"
                         role="button"
                     >
                         ${unsafeHTML(this._htmlMarkup)}
@@ -368,7 +376,7 @@ export class BlockListPreviewCustomView
 
     static styles = [
         css`
-        a {
+        a.block-preview-edit {
           display: block;
           color: inherit;
           text-decoration: inherit;
@@ -376,7 +384,7 @@ export class BlockListPreviewCustomView
           border-radius: 2px;
         }
 
-        a:hover {
+        a.block-preview-edit:hover {
             border-color: var(--uui-color-interactive-emphasis, #3544b1);
         }
 

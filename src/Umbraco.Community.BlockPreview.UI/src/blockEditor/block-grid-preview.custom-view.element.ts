@@ -294,7 +294,6 @@ export class BlockGridPreviewCustomView
                 this._isLoading = false;
             }
             else if (UmbApiError.isUmbApiError(error)) {
-                debugger;
                 this._error = error.message;
                 this._isLoading = false;
             }
@@ -364,6 +363,7 @@ export class BlockGridPreviewCustomView
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
                     @click=${this._handleClick}
                     aria-label="Edit block"
+                    class="block-preview-edit"
                     role="button"
                 >
                     ${unsafeHTML(this._htmlMarkup)}
@@ -386,7 +386,7 @@ export class BlockGridPreviewCustomView
 
     static styles = [
         css`
-            a {
+            a.block-preview-edit {
               display: block;
               color: inherit;
               text-decoration: inherit;
@@ -394,7 +394,7 @@ export class BlockGridPreviewCustomView
               border-radius: 2px;
             }
 
-            a:hover {
+            a.block-preview-edit:hover {
                 border-color: var(--uui-color-interactive-emphasis, #3544b1);
             }
 

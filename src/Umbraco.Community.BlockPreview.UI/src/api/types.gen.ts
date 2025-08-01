@@ -76,13 +76,7 @@ export type AvailableMemberTypeCompositionResponseModel = {
 export type BlockPreviewOptions = {
     blockGrid: BlockWithStylesheetSettings;
     blockList: BlockWithStylesheetSettings;
-    richText: BlockTypeSettings;
-};
-
-export type BlockTypeSettings = {
-    enabled: boolean;
-    viewLocations?: Array<string> | null;
-    contentTypes?: Array<string> | null;
+    richText: BlockWithStylesheetSettings;
 };
 
 export type BlockWithStylesheetSettings = {

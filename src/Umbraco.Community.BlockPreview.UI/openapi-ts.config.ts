@@ -1,4 +1,5 @@
 ﻿import { defineConfig } from '@hey-api/openapi-ts';
+
 export default defineConfig({
     debug: true,
     input: 'http://localhost:26293/umbraco/swagger/management/swagger.json',
